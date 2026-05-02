@@ -5,12 +5,12 @@
 ## 기술 스택
 
 - **Framework**: Next.js 16 (App Router) + TypeScript
-- **DB / ORM**: PostgreSQL + Prisma (예정)
+- **DB / ORM**: PostgreSQL 16 + Prisma 6
 - **UI**: Tailwind CSS v4 + shadcn/ui (Base UI / Nova preset)
 - **Validation**: Zod
 - **Chart**: Recharts
 - **Excel Import**: SheetJS (`xlsx`)
-- **API Docs**: next-swagger-doc + swagger-ui-react
+- **API Docs**: next-swagger-doc + swagger-ui-react (예정)
 - **Test**: Vitest
 
 ## 로컬 실행 방법 (5단계)
@@ -28,40 +28,46 @@ yarn install
 yarn db:up                            # docker compose up -d
 yarn db:migrate                       # init 마이그레이션 적용
 
-# 4) 시드 데이터 로드 (마스터 + 활동 데이터)
-#    아래 "활동 데이터(Excel) 준비" 섹션을 먼저 수행하세요.
+# 4) 마스터 데이터 시드 (카테고리 / 품목 / 배출계수 v1)
 yarn db:seed
 
 # 5) 개발 서버
 yarn dev                              # http://localhost:3000
 ```
 
-### 활동 데이터(Excel) 준비
+### 활동 데이터(Excel) 적재
 
-채용 과제로 받은 구글 시트의 활동 데이터를 시드와 임포트 화면에서 모두 사용합니다.
+활동 데이터는 **앱 화면에서 직접 업로드**하는 것을 권장합니다. 시드 단계에 별도 파일 준비가 필요 없습니다.
 
-1. 구글 시트 → `파일` → `다운로드` → **`Microsoft Excel (.xlsx)`** 선택
-2. 다운로드된 파일을 다음 경로로 옮긴다:
+1. 위 5단계로 앱을 띄운다.
+2. http://localhost:3000/import 접속 → 과제 제공 `.xlsx` 파일 선택 → **업로드**.
+3. 시트(`과제용 데이터`)와 컬럼(`일자(원본) / 활동 유형 / 설명 / 량 / 단위`)이 자동 매칭되어 적재되며, 결과(성공/실패 건수, 실패 행 CSV 다운로드)가 화면에 표시됩니다.
+4. 적재 후 http://localhost:3000 대시보드에서 즉시 확인할 수 있습니다.
 
-   ```
-   prisma/seed-data/activity-data.xlsx
-   ```
+> CLI로 시드와 함께 적재하고 싶다면 `prisma/seed-data/activity-data.xlsx` 위치에 파일을 두고 `yarn db:seed`를 실행하세요. (해당 경로의 `.xlsx`는 회사 내부 자료 보호를 위해 `.gitignore` 처리되어 저장소에 포함되지 않습니다.)
 
-3. `yarn db:seed` 실행 → 카테고리 3 / 품목 4 / 배출계수 4 + 활동 데이터가 적재됨
-
-> 파일이 없어도 시드는 동작하며, 마스터 데이터까지만 적재되고 활동 데이터는 건너뜁니다.
-
-## 프로젝트 구조 (계획)
+## 프로젝트 구조
 
 ```
-app/                  Next.js App Router (UI + /api/v1)
 src/
-  domain/             순수 도메인 로직 (PCF 계산, Scope 매핑, 단위 검증)
-  services/           유스케이스 계층
-  repositories/       Prisma 접근 계층
-  lib/                Excel 파서, Swagger 등 공통 유틸
-components/           shadcn/ui 컴포넌트
-prisma/               schema.prisma, migrations, seed.ts
+  app/                  Next.js App Router (페이지 + /api/v1 라우트)
+    api/v1/             REST API (dashboard / activities / emission-factors / items / import)
+    activities/new/     활동 입력 폼
+    factors/            배출계수 버전 관리
+    import/             Excel 임포트
+  components/
+    ui/                 shadcn/ui (Base UI) 프리미티브 + ChartCard / KpiCard / FormField
+    dashboard/          KPI 카드, 월별/카테고리/품목 차트, 기간 필터
+    factors/            배출계수 추가 다이얼로그
+    layout/             SiteHeader (글로벌 네비게이션)
+  domain/               순수 도메인 로직 (PCF 계산, Scope 매핑, 단위 검증, 도메인 에러)
+  services/             유스케이스 계층 (Prisma 호출 + Zod 입력 스키마)
+  hooks/                useDashboard, useItems, useFactors, useImportBatches
+  lib/                  api-client, api-response, excel-parser, format, prisma 등
+prisma/
+  schema.prisma         ActivityCategory / ActivityItem / EmissionFactor / Activity / ImportBatch
+  migrations/           init 마이그레이션
+  seed.ts               마스터 + (선택) 활동 데이터 시드
 ```
 
 ## 진행 상황
