@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
+import { SiteHeader } from "@/components/layout/site-header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,6 +33,7 @@ export default function RootLayout({
       {/* suppressHydrationWarning: ColorZilla 등 일부 브라우저 확장이 body에 cz-shortcut-listen 같은
           속성을 주입해 발생하는 무해한 hydration 경고를 차단한다. */}
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <SiteHeader />
         {children}
       </body>
     </html>

@@ -1,4 +1,4 @@
-// 대시보드 fetch 유틸. 모든 응답은 { data, meta? } 또는 { error } 구조 (api-response.ts와 일치).
+// API fetch 유틸. 모든 응답은 { data, meta? } 또는 { error } 구조 (api-response.ts와 일치).
 
 export interface SummaryResponse {
   rangeFrom: string | null;
@@ -50,12 +50,48 @@ function buildQuery(params: Record<string, string | number | undefined>) {
   return q ? `?${q}` : "";
 }
 
+export interface ApiErrorPayload {
+  code: string;
+  message: string;
+  details?: unknown;
+}
+
+export class ApiError extends Error {
+  readonly code: string;
+  readonly status: number;
+  readonly details?: unknown;
+  constructor(payload: ApiErrorPayload, status: number) {
+    super(payload.message);
+    this.code = payload.code;
+    this.status = status;
+    this.details = payload.details;
+  }
+}
+
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: "no-store" });
   const json = await res.json();
   if (!res.ok) {
-    const msg = json?.error?.message ?? `${res.status} ${res.statusText}`;
-    throw new Error(msg);
+    throw new ApiError(
+      json?.error ?? { code: "UNKNOWN", message: `${res.status} ${res.statusText}` },
+      res.status
+    );
+  }
+  return json.data as T;
+}
+
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    throw new ApiError(
+      json?.error ?? { code: "UNKNOWN", message: `${res.status} ${res.statusText}` },
+      res.status
+    );
   }
   return json.data as T;
 }
@@ -81,4 +117,79 @@ export async function fetchDashboard(
     getJson<ByItemResponse>(`/api/v1/dashboard/by-item${qWithTop}`),
   ]);
   return { summary, byMonth, byCategory, byItem };
+}
+
+// ─── 마스터 ────────────────────────────────────────────────────────────────
+
+export interface ItemOption {
+  code: string;
+  name: string;
+  unit: string;
+  categoryCode: string;
+  categoryName: string;
+  scope: number;
+}
+
+export function fetchItems(): Promise<ItemOption[]> {
+  return getJson<ItemOption[]>("/api/v1/items");
+}
+
+// ─── 활동 ─────────────────────────────────────────────────────────────────
+
+export interface ActivityCreatePayload {
+  itemCode: string;
+  occurredAt: string;
+  amount: number;
+  unit: string;
+  memo?: string;
+}
+
+export interface ActivityCreateResponse {
+  id: number;
+  itemCode: string;
+  occurredAt: string;
+  amount: string;
+  unit: string;
+}
+
+export function createActivity(
+  payload: ActivityCreatePayload
+): Promise<ActivityCreateResponse> {
+  return postJson<ActivityCreateResponse>("/api/v1/activities", payload);
+}
+
+// ─── 배출계수 ──────────────────────────────────────────────────────────────
+
+export interface FactorRow {
+  id: number;
+  itemCode: string;
+  itemName: string;
+  version: number;
+  value: string;
+  unit: string;
+  validFrom: string;
+  validTo: string | null;
+  source: string | null;
+  note: string | null;
+}
+
+export function fetchFactors(itemCode?: string): Promise<FactorRow[]> {
+  const q = buildQuery({ itemCode });
+  return getJson<FactorRow[]>(`/api/v1/emission-factors${q}`);
+}
+
+export interface FactorCreatePayload {
+  itemCode: string;
+  value: number;
+  unit: string;
+  validFrom: string;
+  validTo?: string | null;
+  source?: string;
+  note?: string;
+}
+
+export function createFactor(
+  payload: FactorCreatePayload
+): Promise<FactorRow> {
+  return postJson<FactorRow>("/api/v1/emission-factors", payload);
 }

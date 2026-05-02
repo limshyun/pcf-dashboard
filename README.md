@@ -72,7 +72,7 @@ prisma/               schema.prisma, migrations, seed.ts
 - [x] Step 4. PCF 계산 도메인 로직 + Vitest 21건
 - [x] Step 5. API Routes (`/api/v1`) 구현
 - [x] Step 6. 대시보드 UI (KPI 4 + 월별/카테고리/품목 차트 + 기간 필터)
-- [ ] Step 7. 입력 폼 + 배출계수 버전 관리 화면
+- [x] Step 7. 활동 입력 폼 + 배출계수 버전 관리 화면 (RHF + Zod, 다이얼로그)
 - [ ] Step 8. Excel 임포트
 - [ ] Step 9. Swagger 문서
 - [ ] Step 10. README 보강 + ERD + 영상/스크린샷
