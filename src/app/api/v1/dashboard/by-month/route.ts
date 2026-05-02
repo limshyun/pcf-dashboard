@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     );
     const result = await getByMonth(range);
     return ok(result);
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }

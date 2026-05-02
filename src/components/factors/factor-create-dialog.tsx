@@ -33,9 +33,13 @@ const FactorFormSchema = z
     value: z
       .string()
       .min(1, "값을 입력하세요")
-      .refine((v) => Number.isFinite(Number(v)) && Number(v) > 0, {
-        message: "0보다 큰 숫자를 입력하세요",
-      }),
+      .refine(
+        (valueText) =>
+          Number.isFinite(Number(valueText)) && Number(valueText) > 0,
+        {
+          message: "0보다 큰 숫자를 입력하세요",
+        }
+      ),
     unit: z
       .string()
       .min(1, "단위를 입력하세요")
@@ -50,16 +54,23 @@ const FactorFormSchema = z
     validTo: z
       .string()
       .optional()
-      .refine((v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v), {
-        message: "YYYY-MM-DD 형식",
-      }),
+      .refine(
+        (optionalDate) =>
+          !optionalDate || /^\d{4}-\d{2}-\d{2}$/.test(optionalDate),
+        {
+          message: "YYYY-MM-DD 형식",
+        }
+      ),
     source: z.string().optional(),
     note: z.string().optional(),
   })
-  .refine((v) => !v.validTo || v.validTo > v.validFrom, {
-    message: "유효 종료일은 시작일보다 뒤여야 합니다",
-    path: ["validTo"],
-  });
+  .refine(
+    (form) => !form.validTo || form.validTo > form.validFrom,
+    {
+      message: "유효 종료일은 시작일보다 뒤여야 합니다",
+      path: ["validTo"],
+    }
+  );
 
 type FactorFormValues = z.infer<typeof FactorFormSchema>;
 
@@ -116,17 +127,19 @@ export function FactorCreateDialog({ defaultItemCode, onCreated }: Props) {
         note: "",
       });
       setOpen(false);
-    } catch (e) {
-      if (e instanceof ApiError) {
-        if (e.code === "UNKNOWN_ITEM") {
-          setError("itemCode", { message: e.message });
-        } else if (e.code === "VALIDATION_ERROR") {
+    } catch (unknownError) {
+      if (unknownError instanceof ApiError) {
+        if (unknownError.code === "UNKNOWN_ITEM") {
+          setError("itemCode", { message: unknownError.message });
+        } else if (unknownError.code === "VALIDATION_ERROR") {
           setServerError("입력값이 유효하지 않습니다.");
         } else {
-          setServerError(e.message);
+          setServerError(unknownError.message);
         }
       } else {
-        setServerError(e instanceof Error ? e.message : "요청 실패");
+        setServerError(
+          unknownError instanceof Error ? unknownError.message : "요청 실패"
+        );
       }
     }
   });
@@ -148,21 +161,24 @@ export function FactorCreateDialog({ defaultItemCode, onCreated }: Props) {
               render={({ field }) => (
                 <Select
                   value={field.value ?? ""}
-                  onValueChange={(v: string | null) => field.onChange(v ?? "")}
+                  onValueChange={(raw: string | null) =>
+                    field.onChange(raw ?? "")
+                  }
                 >
                   <SelectTrigger className="w-full" disabled={itemsLoading}>
                     <SelectValue placeholder="품목 선택">
-                      {(v: string | null) =>
-                        v
-                          ? (items.find((i) => i.code === v)?.name ?? v)
+                      {(selectedCode: string | null) =>
+                        selectedCode
+                          ? (items.find((item) => item.code === selectedCode)
+                              ?.name ?? selectedCode)
                           : "품목 선택"
                       }
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {items.map((i) => (
-                      <SelectItem key={i.code} value={i.code}>
-                        {`${i.name} · ${i.categoryName}`}
+                    {items.map((item) => (
+                      <SelectItem key={item.code} value={item.code}>
+                        {`${item.name} · ${item.categoryName}`}
                       </SelectItem>
                     ))}
                   </SelectContent>

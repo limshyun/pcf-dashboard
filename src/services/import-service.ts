@@ -34,7 +34,9 @@ export async function runImport(
   const status = decideStatus(parsed);
 
   const items = await prisma.activityItem.findMany();
-  const itemIdByCode = new Map(items.map((i) => [i.code, i.id]));
+  const itemIdByCode = new Map(
+    items.map((item) => [item.code, item.id])
+  );
 
   const batch = await prisma.$transaction(async (tx) => {
     const created = await tx.importBatch.create({
@@ -54,18 +56,20 @@ export async function runImport(
     if (parsed.rows.length > 0) {
       await tx.activity.createMany({
         data: parsed.rows
-          .map((r) => {
-            const itemId = itemIdByCode.get(r.itemCode);
+          .map((parsedRow) => {
+            const itemId = itemIdByCode.get(parsedRow.itemCode);
             if (!itemId) return null;
             return {
               itemId,
-              occurredAt: r.occurredAt,
-              amount: new Prisma.Decimal(r.amount),
-              unit: r.unit,
+              occurredAt: parsedRow.occurredAt,
+              amount: new Prisma.Decimal(parsedRow.amount),
+              unit: parsedRow.unit,
               importBatchId: created.id,
             };
           })
-          .filter((d): d is NonNullable<typeof d> => d !== null),
+          .filter(
+            (row): row is NonNullable<typeof row> => row !== null
+          ),
       });
     }
 

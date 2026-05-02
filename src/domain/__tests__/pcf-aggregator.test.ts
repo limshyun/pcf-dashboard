@@ -130,7 +130,7 @@ describe("aggregateByItem", () => {
   it("품목별 합산을 큰 값부터 반환한다", () => {
     const buckets = aggregateByItem(results);
     // 974.4 > 146.376 (KEPCO 3건 합) > 143.5 (TRUCK)
-    expect(buckets.map((b) => b.itemCode)).toEqual([
+    expect(buckets.map((bucket) => bucket.itemCode)).toEqual([
       "PLASTIC_1",
       "KEPCO",
       "TRUCK",

@@ -40,9 +40,13 @@ const FormSchema = z.object({
   amount: z
     .string()
     .min(1, "수량을 입력하세요")
-    .refine((v) => Number.isFinite(Number(v)) && Number(v) > 0, {
-      message: "0보다 큰 숫자를 입력하세요",
-    }),
+    .refine(
+      (amountText) =>
+        Number.isFinite(Number(amountText)) && Number(amountText) > 0,
+      {
+        message: "0보다 큰 숫자를 입력하세요",
+      }
+    ),
   memo: z.string().optional(),
 });
 
@@ -109,12 +113,12 @@ export default function NewActivityPage() {
 
   const categories = useMemo(() => {
     const map = new Map<string, { code: string; name: string; scope: number }>();
-    for (const i of items) {
-      if (!map.has(i.categoryCode)) {
-        map.set(i.categoryCode, {
-          code: i.categoryCode,
-          name: i.categoryName,
-          scope: i.scope,
+    for (const item of items) {
+      if (!map.has(item.categoryCode)) {
+        map.set(item.categoryCode, {
+          code: item.categoryCode,
+          name: item.categoryName,
+          scope: item.scope,
         });
       }
     }
@@ -123,16 +127,18 @@ export default function NewActivityPage() {
 
   const filteredItems = useMemo<ItemOption[]>(() => {
     if (!selectedCategory) return items;
-    return items.filter((i) => i.categoryCode === selectedCategory);
+    return items.filter(
+      (item) => item.categoryCode === selectedCategory
+    );
   }, [items, selectedCategory]);
 
-  const selectedItem = items.find((i) => i.code === selectedItemCode);
+  const selectedItem = items.find((item) => item.code === selectedItemCode);
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError(null);
     setSuccess(null);
     try {
-      const item = items.find((i) => i.code === values.itemCode);
+      const item = items.find((row) => row.code === values.itemCode);
       if (!item) {
         setError("itemCode", { message: "유효한 품목이 아닙니다" });
         return;
@@ -154,16 +160,18 @@ export default function NewActivityPage() {
         amount: "",
         memo: "",
       });
-    } catch (e) {
-      if (e instanceof ApiError) {
-        const mapped = mapApiError(e);
+    } catch (unknownError) {
+      if (unknownError instanceof ApiError) {
+        const mapped = mapApiError(unknownError);
         if (mapped.itemCode) setError("itemCode", { message: mapped.itemCode });
         if (mapped.amount) setError("amount", { message: mapped.amount });
         if (mapped.occurredAt)
           setError("occurredAt", { message: mapped.occurredAt });
         if (mapped.global) setServerError(mapped.global);
       } else {
-        setServerError(e instanceof Error ? e.message : "요청 실패");
+        setServerError(
+          unknownError instanceof Error ? unknownError.message : "요청 실패"
+        );
       }
     }
   });
@@ -198,23 +206,27 @@ export default function NewActivityPage() {
                 render={({ field }) => (
                   <Select
                     value={field.value ?? ""}
-                    onValueChange={(v: string | null) => field.onChange(v ?? "")}
+                    onValueChange={(raw: string | null) =>
+                      field.onChange(raw ?? "")
+                    }
                   >
                     <SelectTrigger className="w-full" disabled={itemsLoading}>
                       <SelectValue placeholder="전체">
-                        {(v: string | null) =>
-                          v
-                            ? (CATEGORY_LABEL[v] ??
-                              categories.find((c) => c.code === v)?.name ??
-                              v)
+                        {(selectedCode: string | null) =>
+                          selectedCode
+                            ? (CATEGORY_LABEL[selectedCode] ??
+                              categories.find(
+                                (cat) => cat.code === selectedCode
+                              )?.name ??
+                              selectedCode)
                             : "전체"
                         }
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((c) => (
-                        <SelectItem key={c.code} value={c.code}>
-                          {`${CATEGORY_LABEL[c.code] ?? c.name} · ${SCOPE_LABEL[c.scope] ?? `Scope ${c.scope}`}`}
+                      {categories.map((category) => (
+                        <SelectItem key={category.code} value={category.code}>
+                          {`${CATEGORY_LABEL[category.code] ?? category.name} · ${SCOPE_LABEL[category.scope] ?? `Scope ${category.scope}`}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -239,21 +251,24 @@ export default function NewActivityPage() {
                 render={({ field }) => (
                   <Select
                     value={field.value ?? ""}
-                    onValueChange={(v: string | null) => field.onChange(v ?? "")}
+                    onValueChange={(raw: string | null) =>
+                      field.onChange(raw ?? "")
+                    }
                   >
                     <SelectTrigger className="w-full" disabled={itemsLoading}>
                       <SelectValue placeholder="품목 선택">
-                        {(v: string | null) =>
-                          v
-                            ? (items.find((i) => i.code === v)?.name ?? v)
+                        {(selectedCode: string | null) =>
+                          selectedCode
+                            ? (items.find((item) => item.code === selectedCode)
+                                ?.name ?? selectedCode)
                             : "품목 선택"
                         }
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {filteredItems.map((i) => (
-                        <SelectItem key={i.code} value={i.code}>
-                          {`${i.name} · ${i.unit}`}
+                      {filteredItems.map((item) => (
+                        <SelectItem key={item.code} value={item.code}>
+                          {`${item.name} · ${item.unit}`}
                         </SelectItem>
                       ))}
                     </SelectContent>

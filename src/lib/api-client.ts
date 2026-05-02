@@ -42,12 +42,13 @@ export interface DashboardRange {
 }
 
 function buildQuery(params: Record<string, string | number | undefined>) {
-  const sp = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== "") sp.set(k, String(v));
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== "")
+      searchParams.set(key, String(value));
   }
-  const q = sp.toString();
-  return q ? `?${q}` : "";
+  const queryString = searchParams.toString();
+  return queryString ? `?${queryString}` : "";
 }
 
 export interface ApiErrorPayload {
@@ -69,31 +70,37 @@ export class ApiError extends Error {
 }
 
 async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { cache: "no-store" });
-  const json = await res.json();
-  if (!res.ok) {
+  const response = await fetch(url, { cache: "no-store" });
+  const payload = await response.json();
+  if (!response.ok) {
     throw new ApiError(
-      json?.error ?? { code: "UNKNOWN", message: `${res.status} ${res.statusText}` },
-      res.status
+      payload?.error ?? {
+        code: "UNKNOWN",
+        message: `${response.status} ${response.statusText}`,
+      },
+      response.status
     );
   }
-  return json.data as T;
+  return payload.data as T;
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const json = await res.json();
-  if (!res.ok) {
+  const payload = await response.json();
+  if (!response.ok) {
     throw new ApiError(
-      json?.error ?? { code: "UNKNOWN", message: `${res.status} ${res.statusText}` },
-      res.status
+      payload?.error ?? {
+        code: "UNKNOWN",
+        message: `${response.status} ${response.statusText}`,
+      },
+      response.status
     );
   }
-  return json.data as T;
+  return payload.data as T;
 }
 
 export interface DashboardData {
@@ -108,13 +115,21 @@ export async function fetchDashboard(
   range: DashboardRange = {},
   topN = 5
 ): Promise<DashboardData> {
-  const q = buildQuery({ from: range.from, to: range.to });
-  const qWithTop = buildQuery({ from: range.from, to: range.to, topN });
+  const dateRangeQuery = buildQuery({ from: range.from, to: range.to });
+  const dateRangeQueryWithTopN = buildQuery({
+    from: range.from,
+    to: range.to,
+    topN,
+  });
   const [summary, byMonth, byCategory, byItem] = await Promise.all([
-    getJson<SummaryResponse>(`/api/v1/dashboard/summary${q}`),
-    getJson<ByMonthResponse>(`/api/v1/dashboard/by-month${q}`),
-    getJson<ByCategoryResponse>(`/api/v1/dashboard/by-category${q}`),
-    getJson<ByItemResponse>(`/api/v1/dashboard/by-item${qWithTop}`),
+    getJson<SummaryResponse>(`/api/v1/dashboard/summary${dateRangeQuery}`),
+    getJson<ByMonthResponse>(`/api/v1/dashboard/by-month${dateRangeQuery}`),
+    getJson<ByCategoryResponse>(
+      `/api/v1/dashboard/by-category${dateRangeQuery}`
+    ),
+    getJson<ByItemResponse>(
+      `/api/v1/dashboard/by-item${dateRangeQueryWithTopN}`
+    ),
   ]);
   return { summary, byMonth, byCategory, byItem };
 }
@@ -174,8 +189,8 @@ export interface FactorRow {
 }
 
 export function fetchFactors(itemCode?: string): Promise<FactorRow[]> {
-  const q = buildQuery({ itemCode });
-  return getJson<FactorRow[]>(`/api/v1/emission-factors${q}`);
+  const queryString = buildQuery({ itemCode });
+  return getJson<FactorRow[]>(`/api/v1/emission-factors${queryString}`);
 }
 
 export interface FactorCreatePayload {
@@ -226,17 +241,23 @@ export interface ImportBatchSummary {
 }
 
 export async function importExcel(file: File): Promise<ImportRunResponse> {
-  const fd = new FormData();
-  fd.append("file", file);
-  const res = await fetch("/api/v1/import", { method: "POST", body: fd });
-  const json = await res.json();
-  if (!res.ok) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await fetch("/api/v1/import", {
+    method: "POST",
+    body: formData,
+  });
+  const payload = await response.json();
+  if (!response.ok) {
     throw new ApiError(
-      json?.error ?? { code: "UNKNOWN", message: `${res.status} ${res.statusText}` },
-      res.status
+      payload?.error ?? {
+        code: "UNKNOWN",
+        message: `${response.status} ${response.statusText}`,
+      },
+      response.status
     );
   }
-  return json.data as ImportRunResponse;
+  return payload.data as ImportRunResponse;
 }
 
 export function fetchImportBatches(): Promise<ImportBatchSummary[]> {

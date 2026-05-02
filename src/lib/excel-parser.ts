@@ -153,7 +153,9 @@ export function parseActivitiesExcel(
       const categoryRaw = raw[COLUMN.category];
       const itemRaw = raw[COLUMN.itemName];
       const amountRaw =
-        AMOUNT_KEYS.map((k) => raw[k]).find((v) => v != null) ?? null;
+        AMOUNT_KEYS.map((columnKey) => raw[columnKey]).find(
+          (cell) => cell != null
+        ) ?? null;
       const unitRaw = raw[COLUMN.unit];
 
       // 빈 행 무시
@@ -196,8 +198,9 @@ export function parseActivitiesExcel(
       });
 
       rows.push(parsed);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+    } catch (parseError) {
+      const message =
+        parseError instanceof Error ? parseError.message : String(parseError);
       errors.push({ rowIndex, raw, message });
     }
   });
@@ -217,15 +220,15 @@ export function parseActivitiesExcel(
 /** 워크북에서 활동 데이터 시트를 자동 선택한다. */
 function pickActivitySheet(wb: XLSX.WorkBook): string {
   // 1) 시트명으로 후보 매칭 (과제용/활동/CT- 키워드)
-  const byName = wb.SheetNames.find((n) =>
-    /활동|CT-|과제용\s*데이터|raw|activity/i.test(n)
+  const byName = wb.SheetNames.find((sheetName) =>
+    /활동|CT-|과제용\s*데이터|raw|activity/i.test(sheetName)
   );
   if (byName) return byName;
   // 2) 시트 내부에 헤더 후보 셀이 존재하는 시트를 선택 (헤더 자동 탐지가 0이 아닌 시트)
-  for (const n of wb.SheetNames) {
-    const sheet = wb.Sheets[n];
+  for (const sheetName of wb.SheetNames) {
+    const sheet = wb.Sheets[sheetName];
     if (!sheet) continue;
-    if (hasHeader(sheet)) return n;
+    if (hasHeader(sheet)) return sheetName;
   }
   return wb.SheetNames[0];
 }

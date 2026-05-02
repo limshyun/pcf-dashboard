@@ -17,22 +17,22 @@ export async function GET(req: NextRequest) {
     const list = await listFactors(itemCode);
 
     return ok(
-      list.map((f) => ({
-        id: f.id,
-        itemCode: f.item.code,
-        itemName: f.item.name,
-        version: f.version,
-        value: f.value.toString(),
-        unit: f.unit,
-        validFrom: f.validFrom.toISOString().slice(0, 10),
-        validTo: f.validTo?.toISOString().slice(0, 10) ?? null,
-        source: f.source,
-        note: f.note,
+      list.map((factor) => ({
+        id: factor.id,
+        itemCode: factor.item.code,
+        itemName: factor.item.name,
+        version: factor.version,
+        value: factor.value.toString(),
+        unit: factor.unit,
+        validFrom: factor.validFrom.toISOString().slice(0, 10),
+        validTo: factor.validTo?.toISOString().slice(0, 10) ?? null,
+        source: factor.source,
+        note: factor.note,
       })),
       { count: list.length }
     );
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }
 
@@ -40,17 +40,17 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const input = FactorCreateSchema.parse(body);
-    const f = await createFactorVersion(input);
+    const created = await createFactorVersion(input);
     return ok({
-      id: f.id,
-      itemCode: f.item.code,
-      version: f.version,
-      value: f.value.toString(),
-      unit: f.unit,
-      validFrom: f.validFrom.toISOString().slice(0, 10),
-      validTo: f.validTo?.toISOString().slice(0, 10) ?? null,
+      id: created.id,
+      itemCode: created.item.code,
+      version: created.version,
+      value: created.value.toString(),
+      unit: created.unit,
+      validFrom: created.validFrom.toISOString().slice(0, 10),
+      validTo: created.validTo?.toISOString().slice(0, 10) ?? null,
     });
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }

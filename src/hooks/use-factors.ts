@@ -23,8 +23,10 @@ export function useFactors(itemCode?: string): State {
     try {
       const list = await fetchFactors(itemCode);
       setRows(list);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "조회 실패");
+    } catch (unknownError) {
+      setError(
+        unknownError instanceof Error ? unknownError.message : "조회 실패"
+      );
     } finally {
       setLoading(false);
     }
@@ -41,6 +43,6 @@ export function useFactors(itemCode?: string): State {
     rows,
     loading,
     error,
-    reload: useCallback(() => setTick((t) => t + 1), []),
+    reload: useCallback(() => setTick((prev) => prev + 1), []),
   };
 }

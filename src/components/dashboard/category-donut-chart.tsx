@@ -13,12 +13,13 @@ interface Props {
 
 export function CategoryDonutChart({ data, loading }: Props) {
   const isEmpty = !loading && (data?.buckets.length ?? 0) === 0;
-  const series = data?.buckets.map((b) => ({
-    name: CATEGORY_LABEL[b.categoryCode] ?? b.categoryCode,
-    code: b.categoryCode,
-    value: Number(b.co2eKg),
-    ratio: b.ratio,
-  })) ?? [];
+  const series =
+    data?.buckets.map((bucket) => ({
+      name: CATEGORY_LABEL[bucket.categoryCode] ?? bucket.categoryCode,
+      code: bucket.categoryCode,
+      value: Number(bucket.co2eKg),
+      ratio: bucket.ratio,
+    })) ?? [];
 
   return (
     <ChartCard>
@@ -37,18 +38,24 @@ export function CategoryDonutChart({ data, loading }: Props) {
               paddingAngle={2}
               stroke="var(--background)"
             >
-              {series.map((s) => (
+              {series.map((segment) => (
                 <Cell
-                  key={s.code}
-                  fill={CATEGORY_COLOR[s.code] ?? "oklch(0.7 0 0)"}
+                  key={segment.code}
+                  fill={CATEGORY_COLOR[segment.code] ?? "oklch(0.7 0 0)"}
                 />
               ))}
             </Pie>
             <Tooltip
-              formatter={(v, _n, item) => {
-                const f = formatCo2e(typeof v === "number" ? v : Number(v ?? 0));
-                const ratio = (item?.payload as { ratio?: number })?.ratio ?? 0;
-                return [`${f.value} ${f.unit} (${formatRatio(ratio)})`, "배출량"];
+              formatter={(rawKg, _name, item) => {
+                const formatted = formatCo2e(
+                  typeof rawKg === "number" ? rawKg : Number(rawKg ?? 0)
+                );
+                const ratio =
+                  (item?.payload as { ratio?: number })?.ratio ?? 0;
+                return [
+                  `${formatted.value} ${formatted.unit} (${formatRatio(ratio)})`,
+                  "배출량",
+                ];
               }}
               contentStyle={{
                 background: "var(--popover)",

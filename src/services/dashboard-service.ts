@@ -62,10 +62,10 @@ export async function getSummary(range: DashboardRange) {
     totalCo2eKg: total.toString(),
     activityCount: results.length,
     failureCount: failures.length,
-    scopeBreakdown: byScope.map((b) => ({
-      scope: b.scope,
-      co2eKg: b.co2eKg.toString(),
-      ratio: Number(b.ratio.toFixed(6)),
+    scopeBreakdown: byScope.map((bucket) => ({
+      scope: bucket.scope,
+      co2eKg: bucket.co2eKg.toString(),
+      ratio: Number(bucket.ratio.toFixed(6)),
     })),
   };
 }
@@ -74,9 +74,9 @@ export async function getByMonth(range: DashboardRange) {
   const { results } = await computeAll(range);
   return {
     ...rangeMeta(range),
-    buckets: aggregateByMonth(results).map((b) => ({
-      yearMonth: b.yearMonth,
-      co2eKg: b.co2eKg.toString(),
+    buckets: aggregateByMonth(results).map((bucket) => ({
+      yearMonth: bucket.yearMonth,
+      co2eKg: bucket.co2eKg.toString(),
     })),
   };
 }
@@ -85,10 +85,10 @@ export async function getByCategory(range: DashboardRange) {
   const { results } = await computeAll(range);
   return {
     ...rangeMeta(range),
-    buckets: aggregateByCategory(results).map((b) => ({
-      categoryCode: b.categoryCode,
-      co2eKg: b.co2eKg.toString(),
-      ratio: Number(b.ratio.toFixed(6)),
+    buckets: aggregateByCategory(results).map((bucket) => ({
+      categoryCode: bucket.categoryCode,
+      co2eKg: bucket.co2eKg.toString(),
+      ratio: Number(bucket.ratio.toFixed(6)),
     })),
   };
 }
@@ -104,9 +104,9 @@ export async function getByItem(range: ByItemQuery) {
   return {
     ...rangeMeta(range),
     topN: range.topN ?? null,
-    buckets: aggregateByItem(results, range.topN).map((b) => ({
-      itemCode: b.itemCode,
-      co2eKg: b.co2eKg.toString(),
+    buckets: aggregateByItem(results, range.topN).map((bucket) => ({
+      itemCode: bucket.itemCode,
+      co2eKg: bucket.co2eKg.toString(),
     })),
   };
 }

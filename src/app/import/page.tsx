@@ -51,19 +51,19 @@ function statusBadge(status: ImportStatus) {
 function downloadErrorsCsv(result: ImportRunResponse) {
   const header = ["rowIndex", "message", "raw"];
   const lines = [header.join(",")];
-  for (const e of result.errors) {
-    const raw = JSON.stringify(e.raw).replace(/"/g, '""');
-    const msg = e.message.replace(/"/g, '""');
-    lines.push(`${e.rowIndex},"${msg}","${raw}"`);
+  for (const rowError of result.errors) {
+    const raw = JSON.stringify(rowError.raw).replace(/"/g, '""');
+    const msg = rowError.message.replace(/"/g, '""');
+    lines.push(`${rowError.rowIndex},"${msg}","${raw}"`);
   }
   const blob = new Blob([lines.join("\n")], {
     type: "text/csv;charset=utf-8",
   });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `import-errors-${result.batchId}.csv`;
-  a.click();
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `import-errors-${result.batchId}.csv`;
+  anchor.click();
   URL.revokeObjectURL(url);
 }
 
@@ -80,8 +80,8 @@ export default function ImportPage() {
     reload: reloadBatches,
   } = useImportBatches();
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!file) {
       setError("파일을 선택하세요");
       return;
@@ -90,14 +90,16 @@ export default function ImportPage() {
     setResult(null);
     setSubmitting(true);
     try {
-      const r = await importExcel(file);
-      setResult(r);
+      const importResult = await importExcel(file);
+      setResult(importResult);
       reloadBatches();
-    } catch (e) {
-      if (e instanceof ApiError) {
-        setError(`[${e.code}] ${e.message}`);
+    } catch (unknownError) {
+      if (unknownError instanceof ApiError) {
+        setError(`[${unknownError.code}] ${unknownError.message}`);
       } else {
-        setError(e instanceof Error ? e.message : "업로드 실패");
+        setError(
+          unknownError instanceof Error ? unknownError.message : "업로드 실패"
+        );
       }
     } finally {
       setSubmitting(false);
@@ -126,9 +128,9 @@ export default function ImportPage() {
               <Input
                 type="file"
                 accept=".xlsx,.xls"
-                onChange={(e) => {
-                  const f = e.target.files?.[0] ?? null;
-                  setFile(f);
+                onChange={(event) => {
+                  const selectedFile = event.target.files?.[0] ?? null;
+                  setFile(selectedFile);
                   setResult(null);
                   setError(null);
                 }}
@@ -195,10 +197,10 @@ export default function ImportPage() {
                       </Button>
                     </div>
                     <ul className="space-y-1 text-xs text-muted-foreground">
-                      {result.errors.slice(0, 5).map((e) => (
-                        <li key={e.rowIndex}>
-                          <span className="font-mono">행 {e.rowIndex}</span>{" "}
-                          — {e.message}
+                      {result.errors.slice(0, 5).map((rowError) => (
+                        <li key={rowError.rowIndex}>
+                          <span className="font-mono">행 {rowError.rowIndex}</span>{" "}
+                          — {rowError.message}
                         </li>
                       ))}
                     </ul>
@@ -243,22 +245,22 @@ export default function ImportPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {batches.map((b) => (
-                  <TableRow key={b.id}>
+                {batches.map((batch) => (
+                  <TableRow key={batch.id}>
                     <TableCell className="text-xs text-muted-foreground">
-                      {new Date(b.createdAt).toLocaleString("ko-KR")}
+                      {new Date(batch.createdAt).toLocaleString("ko-KR")}
                     </TableCell>
-                    <TableCell className="font-medium">{b.filename}</TableCell>
+                    <TableCell className="font-medium">{batch.filename}</TableCell>
                     <TableCell className="text-right font-mono">
-                      {b.rowCount}
+                      {batch.rowCount}
                     </TableCell>
                     <TableCell className="text-right font-mono text-emerald-600 dark:text-emerald-400">
-                      {b.successCount}
+                      {batch.successCount}
                     </TableCell>
                     <TableCell className="text-right font-mono text-destructive">
-                      {b.failedCount}
+                      {batch.failedCount}
                     </TableCell>
-                    <TableCell>{statusBadge(b.status)}</TableCell>
+                    <TableCell>{statusBadge(batch.status)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

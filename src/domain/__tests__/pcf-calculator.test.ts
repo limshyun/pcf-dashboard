@@ -204,7 +204,7 @@ describe("calculateEmissions", () => {
     expect(failures).toHaveLength(2);
 
     // 트럭: 41 × 3.5 = 143.5
-    const truck = results.find((r) => r.itemCode === "TRUCK");
+    const truck = results.find((row) => row.itemCode === "TRUCK");
     expect(truck?.co2eKg.toString()).toBe("143.5");
 
     expect(failures[0].error).toBeInstanceOf(MissingFactorError);

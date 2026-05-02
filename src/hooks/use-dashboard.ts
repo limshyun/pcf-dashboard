@@ -31,10 +31,12 @@ export function useDashboard(
     setLoading(true);
     setError(null);
     try {
-      const d = await fetchDashboard(range, topN);
-      setData(d);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "데이터 로드 실패");
+      const dashboardData = await fetchDashboard(range, topN);
+      setData(dashboardData);
+    } catch (unknownError) {
+      setError(
+        unknownError instanceof Error ? unknownError.message : "데이터 로드 실패"
+      );
     } finally {
       setLoading(false);
     }
@@ -52,6 +54,6 @@ export function useDashboard(
     data,
     loading,
     error,
-    reload: useCallback(() => setTick((t) => t + 1), []),
+    reload: useCallback(() => setTick((prev) => prev + 1), []),
   };
 }

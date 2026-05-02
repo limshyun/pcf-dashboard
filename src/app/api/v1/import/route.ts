@@ -7,19 +7,19 @@ export async function GET() {
   try {
     const batches = await listImportBatches();
     return ok(
-      batches.map((b) => ({
-        id: b.id,
-        filename: b.filename,
-        rowCount: b.rowCount,
-        successCount: b.successCount,
-        failedCount: b.failedCount,
-        status: b.status,
-        createdAt: b.createdAt.toISOString(),
+      batches.map((batch) => ({
+        id: batch.id,
+        filename: batch.filename,
+        rowCount: batch.rowCount,
+        successCount: batch.successCount,
+        failedCount: batch.failedCount,
+        status: batch.status,
+        createdAt: batch.createdAt.toISOString(),
       })),
       { count: batches.length }
     );
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     const result = await runImport(file.name, buf);
 
     return ok(result, { batchId: result.batchId });
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }

@@ -20,10 +20,11 @@ interface Props {
 
 export function TopItemsChart({ data, loading }: Props) {
   const isEmpty = !loading && (data?.buckets.length ?? 0) === 0;
-  const series = data?.buckets.map((b) => ({
-    name: ITEM_LABEL[b.itemCode] ?? b.itemCode,
-    kg: Number(b.co2eKg),
-  })) ?? [];
+  const series =
+    data?.buckets.map((bucket) => ({
+      name: ITEM_LABEL[bucket.itemCode] ?? bucket.itemCode,
+      kg: Number(bucket.co2eKg),
+    })) ?? [];
 
   return (
     <ChartCard>
@@ -49,7 +50,7 @@ export function TopItemsChart({ data, loading }: Props) {
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(v: number) => formatCo2e(v).value}
+              tickFormatter={(value: number) => formatCo2e(value).value}
             />
             <YAxis
               type="category"
@@ -60,9 +61,11 @@ export function TopItemsChart({ data, loading }: Props) {
               width={90}
             />
             <Tooltip
-              formatter={(v) => {
-                const f = formatCo2e(typeof v === "number" ? v : Number(v ?? 0));
-                return [`${f.value} ${f.unit}`, "배출량"];
+              formatter={(raw) => {
+                const formatted = formatCo2e(
+                  typeof raw === "number" ? raw : Number(raw ?? 0)
+                );
+                return [`${formatted.value} ${formatted.unit}`, "배출량"];
               }}
               contentStyle={{
                 background: "var(--popover)",

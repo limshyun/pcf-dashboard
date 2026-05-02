@@ -20,8 +20,8 @@ export function DateRangeFilter({ initial, onApply, loading }: Props) {
   return (
     <form
       className="flex flex-wrap items-end gap-2"
-      onSubmit={(e) => {
-        e.preventDefault();
+      onSubmit={(event) => {
+        event.preventDefault();
         onApply({ from: from || undefined, to: to || undefined });
       }}
     >
@@ -33,7 +33,7 @@ export function DateRangeFilter({ initial, onApply, loading }: Props) {
           id="filter-from"
           type="date"
           value={from}
-          onChange={(e) => setFrom(e.target.value)}
+          onChange={(event) => setFrom(event.target.value)}
           className="w-40"
         />
       </div>
@@ -45,7 +45,7 @@ export function DateRangeFilter({ initial, onApply, loading }: Props) {
           id="filter-to"
           type="date"
           value={to}
-          onChange={(e) => setTo(e.target.value)}
+          onChange={(event) => setTo(event.target.value)}
           className="w-40"
         />
       </div>

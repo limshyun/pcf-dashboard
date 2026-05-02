@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     );
     const summary = await getSummary(range);
     return ok(summary);
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }

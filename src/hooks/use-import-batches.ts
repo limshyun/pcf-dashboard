@@ -23,8 +23,10 @@ export function useImportBatches(): State {
     try {
       const rows = await fetchImportBatches();
       setBatches(rows);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "히스토리 로드 실패");
+    } catch (unknownError) {
+      setError(
+        unknownError instanceof Error ? unknownError.message : "히스토리 로드 실패"
+      );
     } finally {
       setLoading(false);
     }
@@ -41,6 +43,6 @@ export function useImportBatches(): State {
     batches,
     loading,
     error,
-    reload: useCallback(() => setTick((t) => t + 1), []),
+    reload: useCallback(() => setTick((prev) => prev + 1), []),
   };
 }

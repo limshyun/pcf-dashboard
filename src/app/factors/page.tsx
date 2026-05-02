@@ -40,7 +40,7 @@ export default function FactorsPage() {
   );
 
   const itemMap = useMemo(() => {
-    return new Map(items.map((i) => [i.code, i]));
+    return new Map(items.map((item) => [item.code, item]));
   }, [items]);
 
   return (
@@ -68,22 +68,25 @@ export default function FactorsPage() {
             <FormField label="품목 필터">
               <Select
                 value={itemCode}
-                onValueChange={(v: string | null) => setItemCode(v ?? ALL)}
+                onValueChange={(raw: string | null) =>
+                  setItemCode(raw ?? ALL)
+                }
               >
                 <SelectTrigger className="w-full" disabled={itemsLoading}>
                   <SelectValue placeholder="전체">
-                    {(v: string | null) =>
-                      !v || v === ALL
+                    {(selectedCode: string | null) =>
+                      !selectedCode || selectedCode === ALL
                         ? "전체"
-                        : (items.find((i) => i.code === v)?.name ?? v)
+                        : (items.find((item) => item.code === selectedCode)
+                            ?.name ?? selectedCode)
                     }
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>전체</SelectItem>
-                  {items.map((i) => (
-                    <SelectItem key={i.code} value={i.code}>
-                      {i.name}
+                  {items.map((item) => (
+                    <SelectItem key={item.code} value={item.code}>
+                      {item.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -121,22 +124,22 @@ export default function FactorsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((r) => {
-                  const item = itemMap.get(r.itemCode);
-                  const isActive = r.validTo === null;
+                {rows.map((row) => {
+                  const item = itemMap.get(row.itemCode);
+                  const isActive = row.validTo === null;
                   return (
-                    <TableRow key={r.id}>
+                    <TableRow key={row.id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{r.itemName}</span>
+                          <span className="font-medium">{row.itemName}</span>
                           <span className="text-xs text-muted-foreground">
-                            {item?.categoryName ?? r.itemCode}
+                            {item?.categoryName ?? row.itemCode}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <span>v{r.version}</span>
+                          <span>v{row.version}</span>
                           {isActive && (
                             <Badge variant="secondary" className="text-[10px]">
                               현재
@@ -145,18 +148,18 @@ export default function FactorsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-mono">
-                        {r.value}
+                        {row.value}
                       </TableCell>
                       <TableCell className="font-mono text-xs">
-                        {r.unit}
+                        {row.unit}
                       </TableCell>
-                      <TableCell>{r.validFrom}</TableCell>
+                      <TableCell>{row.validFrom}</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {r.validTo ?? "—"}
+                        {row.validTo ?? "—"}
                       </TableCell>
                       <TableCell className="max-w-[280px] whitespace-normal text-xs text-muted-foreground">
-                        {r.source && <div>{r.source}</div>}
-                        {r.note && <div>{r.note}</div>}
+                        {row.source && <div>{row.source}</div>}
+                        {row.note && <div>{row.note}</div>}
                       </TableCell>
                     </TableRow>
                   );

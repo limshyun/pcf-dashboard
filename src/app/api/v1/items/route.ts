@@ -5,17 +5,17 @@ export async function GET() {
   try {
     const items = await listItems();
     return ok(
-      items.map((i) => ({
-        code: i.code,
-        name: i.name,
-        unit: i.unit,
-        categoryCode: i.category.code,
-        categoryName: i.category.name,
-        scope: i.category.scope,
+      items.map((item) => ({
+        code: item.code,
+        name: item.name,
+        unit: item.unit,
+        categoryCode: item.category.code,
+        categoryName: item.category.name,
+        scope: item.category.scope,
       })),
       { count: items.length }
     );
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }

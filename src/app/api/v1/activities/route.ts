@@ -17,21 +17,21 @@ export async function GET(req: NextRequest) {
     const list = await listActivities(filter);
 
     return ok(
-      list.map((a) => ({
-        id: a.id,
-        itemCode: a.item.code,
-        itemName: a.item.name,
-        categoryCode: a.item.category.code,
-        scope: a.item.category.scope,
-        occurredAt: a.occurredAt.toISOString().slice(0, 10),
-        amount: a.amount.toString(),
-        unit: a.unit,
-        memo: a.memo,
+      list.map((activity) => ({
+        id: activity.id,
+        itemCode: activity.item.code,
+        itemName: activity.item.name,
+        categoryCode: activity.item.category.code,
+        scope: activity.item.category.scope,
+        occurredAt: activity.occurredAt.toISOString().slice(0, 10),
+        amount: activity.amount.toString(),
+        unit: activity.unit,
+        memo: activity.memo,
       })),
       { count: list.length }
     );
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }
 
@@ -39,15 +39,15 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const input = ActivityCreateSchema.parse(body);
-    const a = await createActivity(input);
+    const created = await createActivity(input);
     return ok({
-      id: a.id,
-      itemCode: a.item.code,
-      occurredAt: a.occurredAt.toISOString().slice(0, 10),
-      amount: a.amount.toString(),
-      unit: a.unit,
+      id: created.id,
+      itemCode: created.item.code,
+      occurredAt: created.occurredAt.toISOString().slice(0, 10),
+      amount: created.amount.toString(),
+      unit: created.unit,
     });
-  } catch (e) {
-    return handleError(e);
+  } catch (error) {
+    return handleError(error);
   }
 }

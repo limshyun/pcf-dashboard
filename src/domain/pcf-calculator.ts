@@ -73,9 +73,12 @@ export function pickFactorAt(
   occurredAt: Date
 ): EmissionFactorInput | null {
   const candidates = factors
-    .filter((f) => f.itemCode === itemCode)
-    .filter((f) => f.validFrom.getTime() <= occurredAt.getTime())
-    .filter((f) => !f.validTo || occurredAt.getTime() < f.validTo.getTime())
+    .filter((factor) => factor.itemCode === itemCode)
+    .filter((factor) => factor.validFrom.getTime() <= occurredAt.getTime())
+    .filter(
+      (factor) =>
+        !factor.validTo || occurredAt.getTime() < factor.validTo.getTime()
+    )
     .sort((a, b) => b.version - a.version);
 
   return candidates[0] ?? null;
@@ -169,10 +172,11 @@ export function calculateEmissions(
   for (const activity of activities) {
     try {
       results.push(calculateEmission(activity, factors));
-    } catch (e) {
+    } catch (calcError) {
       failures.push({
         activity,
-        error: e instanceof Error ? e : new Error(String(e)),
+        error:
+          calcError instanceof Error ? calcError : new Error(String(calcError)),
       });
     }
   }

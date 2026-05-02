@@ -27,7 +27,7 @@ export default function DashboardPage() {
         </div>
         <DateRangeFilter
           initial={range}
-          onApply={(r) => setRange(r)}
+          onApply={setRange}
           loading={loading}
         />
       </header>
