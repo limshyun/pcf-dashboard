@@ -45,3 +45,10 @@ export class InvalidFactorUnitError extends DomainError {
     );
   }
 }
+
+/** 알 수 없는 품목 코드. */
+export class UnknownItemError extends DomainError {
+  constructor(public readonly itemCode: string) {
+    super(`알 수 없는 품목 코드: "${itemCode}"`);
+  }
+}
