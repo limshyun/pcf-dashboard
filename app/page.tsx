@@ -1,40 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 
 import { CategoryDonutChart } from "@/src/components/dashboard/category-donut-chart";
 import { DateRangeFilter } from "@/src/components/dashboard/date-range-filter";
 import { KpiCards } from "@/src/components/dashboard/kpi-cards";
 import { MonthlyTrendChart } from "@/src/components/dashboard/monthly-trend-chart";
 import { TopItemsChart } from "@/src/components/dashboard/top-items-chart";
-import {
-  type DashboardData,
-  type DashboardRange,
-  fetchDashboard,
-} from "@/src/lib/api-client";
+import { useDashboard } from "@/src/hooks/use-dashboard";
+import type { DashboardRange } from "@/src/lib/api-client";
 
 export default function DashboardPage() {
   const [range, setRange] = useState<DashboardRange>({});
-  const [data, setData] = useState<DashboardData | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async (r: DashboardRange) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const d = await fetchDashboard(r);
-      setData(d);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "데이터 로드 실패");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load(range);
-  }, [range, load]);
+  const { data, loading, error } = useDashboard(range);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-6 md:p-8">
