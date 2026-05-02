@@ -67,11 +67,11 @@ prisma/               schema.prisma, migrations, seed.ts
 ## 진행 상황
 
 - [x] Step 1. Next.js 16 + TS + Tailwind + shadcn/ui 부트스트랩
-- [ ] Step 2. Prisma 스키마 + Docker Compose
-- [ ] Step 3. 시드 데이터 로드 (활동 31행 + 배출계수 4건)
-- [ ] Step 4. PCF 계산 도메인 로직 + Vitest
-- [ ] Step 5. API Routes (`/api/v1`) 구현
-- [ ] Step 6. 대시보드 UI (KPI / 차트 4종)
+- [x] Step 2. Prisma 스키마 + Docker Compose
+- [x] Step 3. 시드 데이터 로드 (마스터 + Excel 활동 데이터)
+- [x] Step 4. PCF 계산 도메인 로직 + Vitest 21건
+- [x] Step 5. API Routes (`/api/v1`) 구현
+- [x] Step 6. 대시보드 UI (KPI 4 + 월별/카테고리/품목 차트 + 기간 필터)
 - [ ] Step 7. 입력 폼 + 배출계수 버전 관리 화면
 - [ ] Step 8. Excel 임포트
 - [ ] Step 9. Swagger 문서
