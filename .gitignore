@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 채용 과제용 시드 데이터 (회사 내부 자료) — 저장소에 포함하지 않는다.
+# README의 "활동 데이터(Excel) 준비" 섹션 참조하여 로컬에 직접 둘 것.
+prisma/seed-data/*.xlsx
+prisma/seed-data/*.xls
