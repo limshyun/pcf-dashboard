@@ -2,9 +2,9 @@
 
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 
-import { ChartCard } from "@/src/components/ui/chart-card";
-import type { ByCategoryResponse } from "@/src/lib/api-client";
-import { CATEGORY_COLOR, CATEGORY_LABEL, formatCo2e, formatRatio } from "@/src/lib/format";
+import { ChartCard } from "@/components/ui/chart-card";
+import type { ByCategoryResponse } from "@/lib/api-client";
+import { CATEGORY_COLOR, CATEGORY_LABEL, formatCo2e, formatRatio } from "@/lib/format";
 
 interface Props {
   data?: ByCategoryResponse;

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import type { DashboardRange } from "@/src/lib/api-client";
+import type { DashboardRange } from "@/lib/api-client";
 
 interface Props {
   initial: DashboardRange;

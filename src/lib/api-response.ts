@@ -11,7 +11,7 @@ import {
   MissingFactorError,
   UnitMismatchError,
   UnknownItemError,
-} from "@/src/domain/errors";
+} from "@/domain/errors";
 
 interface ApiSuccess<T> {
   data: T;

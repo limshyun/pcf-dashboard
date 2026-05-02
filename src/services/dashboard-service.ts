@@ -9,10 +9,10 @@ import {
   aggregateByMonth,
   aggregateByScope,
   totalEmission,
-} from "@/src/domain/pcf-aggregator";
-import { calculateEmissions } from "@/src/domain/pcf-calculator";
-import { toActivityInput, toFactorInput } from "@/src/lib/db-mappers";
-import { prisma } from "@/src/lib/prisma";
+} from "@/domain/pcf-aggregator";
+import { calculateEmissions } from "@/domain/pcf-calculator";
+import { toActivityInput, toFactorInput } from "@/lib/db-mappers";
+import { prisma } from "@/lib/prisma";
 
 export const DashboardRangeSchema = z.object({
   from: z.coerce.date().optional(),

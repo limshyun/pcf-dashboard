@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
-import { UnitMismatchError, UnknownItemError } from "@/src/domain/errors";
-import { prisma } from "@/src/lib/prisma";
+import { UnitMismatchError, UnknownItemError } from "@/domain/errors";
+import { prisma } from "@/lib/prisma";
 
 export const ActivityCreateSchema = z.object({
   itemCode: z.string().min(1),

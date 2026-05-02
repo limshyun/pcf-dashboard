@@ -2,9 +2,9 @@
 
 import { Badge } from "@/components/ui/badge";
 
-import { KpiCard, KpiGrid } from "@/src/components/ui/kpi-card";
-import type { SummaryResponse } from "@/src/lib/api-client";
-import { SCOPE_LABEL, formatCo2e, formatRatio } from "@/src/lib/format";
+import { KpiCard, KpiGrid } from "@/components/ui/kpi-card";
+import type { SummaryResponse } from "@/lib/api-client";
+import { SCOPE_LABEL, formatCo2e, formatRatio } from "@/lib/format";
 
 interface Props {
   summary?: SummaryResponse;

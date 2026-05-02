@@ -1,12 +1,12 @@
 import { NextRequest } from "next/server";
 
-import { handleError, ok } from "@/src/lib/api-response";
+import { handleError, ok } from "@/lib/api-response";
 import {
   ActivityCreateSchema,
   ActivityListQuerySchema,
   createActivity,
   listActivities,
-} from "@/src/services/activity-service";
+} from "@/services/activity-service";
 
 export async function GET(req: NextRequest) {
   try {

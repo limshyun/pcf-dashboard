@@ -1,18 +1,18 @@
 import { NextRequest } from "next/server";
 
-import { handleError, ok } from "@/src/lib/api-response";
+import { handleError, ok } from "@/lib/api-response";
 import {
-  ByItemQuerySchema,
-  getByItem,
-} from "@/src/services/dashboard-service";
+  DashboardRangeSchema,
+  getByMonth,
+} from "@/services/dashboard-service";
 
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const query = ByItemQuerySchema.parse(
+    const range = DashboardRangeSchema.parse(
       Object.fromEntries(url.searchParams)
     );
-    const result = await getByItem(query);
+    const result = await getByMonth(range);
     return ok(result);
   } catch (e) {
     return handleError(e);

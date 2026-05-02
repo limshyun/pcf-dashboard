@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
-import { CategoryDonutChart } from "@/src/components/dashboard/category-donut-chart";
-import { DateRangeFilter } from "@/src/components/dashboard/date-range-filter";
-import { KpiCards } from "@/src/components/dashboard/kpi-cards";
-import { MonthlyTrendChart } from "@/src/components/dashboard/monthly-trend-chart";
-import { TopItemsChart } from "@/src/components/dashboard/top-items-chart";
-import { useDashboard } from "@/src/hooks/use-dashboard";
-import type { DashboardRange } from "@/src/lib/api-client";
+import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
+import { DateRangeFilter } from "@/components/dashboard/date-range-filter";
+import { KpiCards } from "@/components/dashboard/kpi-cards";
+import { MonthlyTrendChart } from "@/components/dashboard/monthly-trend-chart";
+import { TopItemsChart } from "@/components/dashboard/top-items-chart";
+import { useDashboard } from "@/hooks/use-dashboard";
+import type { DashboardRange } from "@/lib/api-client";
 
 export default function DashboardPage() {
   const [range, setRange] = useState<DashboardRange>({});

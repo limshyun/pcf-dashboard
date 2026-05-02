@@ -10,7 +10,7 @@ import type {
 import type {
   ActivityInput,
   EmissionFactorInput,
-} from "@/src/domain/pcf-calculator";
+} from "@/domain/pcf-calculator";
 
 export type ActivityWithRelations = Activity & {
   item: ActivityItem & { category: ActivityCategory };

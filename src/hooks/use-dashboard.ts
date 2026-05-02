@@ -9,7 +9,7 @@ import {
   type DashboardData,
   type DashboardRange,
   fetchDashboard,
-} from "@/src/lib/api-client";
+} from "@/lib/api-client";
 
 export interface UseDashboardResult {
   data: DashboardData | undefined;

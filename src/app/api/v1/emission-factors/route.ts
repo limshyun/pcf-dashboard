@@ -1,12 +1,12 @@
 import { NextRequest } from "next/server";
 
-import { handleError, ok } from "@/src/lib/api-response";
+import { handleError, ok } from "@/lib/api-response";
 import {
   FactorCreateSchema,
   FactorListQuerySchema,
   createFactorVersion,
   listFactors,
-} from "@/src/services/factor-service";
+} from "@/services/factor-service";
 
 export async function GET(req: NextRequest) {
   try {

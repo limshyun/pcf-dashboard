@@ -4,8 +4,8 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
-import { UnknownItemError } from "@/src/domain/errors";
-import { prisma } from "@/src/lib/prisma";
+import { UnknownItemError } from "@/domain/errors";
+import { prisma } from "@/lib/prisma";
 
 export const FactorListQuerySchema = z.object({
   itemCode: z.string().optional(),

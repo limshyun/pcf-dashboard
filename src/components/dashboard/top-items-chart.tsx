@@ -9,9 +9,9 @@ import {
   YAxis,
 } from "recharts";
 
-import { ChartCard } from "@/src/components/ui/chart-card";
-import type { ByItemResponse } from "@/src/lib/api-client";
-import { ITEM_LABEL, formatCo2e } from "@/src/lib/format";
+import { ChartCard } from "@/components/ui/chart-card";
+import type { ByItemResponse } from "@/lib/api-client";
+import { ITEM_LABEL, formatCo2e } from "@/lib/format";
 
 interface Props {
   data?: ByItemResponse;

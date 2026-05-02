@@ -9,9 +9,9 @@ import {
   YAxis,
 } from "recharts";
 
-import { ChartCard } from "@/src/components/ui/chart-card";
-import type { ByMonthResponse } from "@/src/lib/api-client";
-import { formatCo2e, formatYearMonthLabel } from "@/src/lib/format";
+import { ChartCard } from "@/components/ui/chart-card";
+import type { ByMonthResponse } from "@/lib/api-client";
+import { formatCo2e, formatYearMonthLabel } from "@/lib/format";
 
 interface Props {
   data?: ByMonthResponse;
