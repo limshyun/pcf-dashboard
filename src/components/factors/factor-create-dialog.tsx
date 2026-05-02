@@ -147,19 +147,22 @@ export function FactorCreateDialog({ defaultItemCode, onCreated }: Props) {
               name="itemCode"
               render={({ field }) => (
                 <Select
-                  value={field.value || undefined}
+                  value={field.value ?? ""}
                   onValueChange={(v: string | null) => field.onChange(v ?? "")}
                 >
                   <SelectTrigger className="w-full" disabled={itemsLoading}>
-                    <SelectValue placeholder="품목 선택" />
+                    <SelectValue placeholder="품목 선택">
+                      {(v: string | null) =>
+                        v
+                          ? (items.find((i) => i.code === v)?.name ?? v)
+                          : "품목 선택"
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {items.map((i) => (
                       <SelectItem key={i.code} value={i.code}>
-                        {i.name}
-                        <span className="text-xs text-muted-foreground">
-                          · {i.categoryName}
-                        </span>
+                        {`${i.name} · ${i.categoryName}`}
                       </SelectItem>
                     ))}
                   </SelectContent>

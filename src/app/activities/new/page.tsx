@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -84,6 +84,7 @@ export default function NewActivityPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
@@ -91,11 +92,17 @@ export default function NewActivityPage() {
     defaultValues: {
       categoryCode: "",
       itemCode: "",
-      occurredAt: todayISO(),
+      occurredAt: "",
       amount: "",
       memo: "",
     },
   });
+
+  // SSR과 client에서 todayISO() 결과(timezone)가 달라지는 hydration mismatch 방지.
+  // 빈 값으로 SSR → client mount 후 setValue로 채운다.
+  useEffect(() => {
+    setValue("occurredAt", todayISO());
+  }, [setValue]);
 
   const selectedCategory = useWatch({ control, name: "categoryCode" });
   const selectedItemCode = useWatch({ control, name: "itemCode" });
@@ -190,19 +197,24 @@ export default function NewActivityPage() {
                 name="categoryCode"
                 render={({ field }) => (
                   <Select
-                    value={field.value || undefined}
+                    value={field.value ?? ""}
                     onValueChange={(v: string | null) => field.onChange(v ?? "")}
                   >
                     <SelectTrigger className="w-full" disabled={itemsLoading}>
-                      <SelectValue placeholder="전체" />
+                      <SelectValue placeholder="전체">
+                        {(v: string | null) =>
+                          v
+                            ? (CATEGORY_LABEL[v] ??
+                              categories.find((c) => c.code === v)?.name ??
+                              v)
+                            : "전체"
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((c) => (
                         <SelectItem key={c.code} value={c.code}>
-                          {CATEGORY_LABEL[c.code] ?? c.name}{" "}
-                          <span className="text-xs text-muted-foreground">
-                            · {SCOPE_LABEL[c.scope] ?? `Scope ${c.scope}`}
-                          </span>
+                          {`${CATEGORY_LABEL[c.code] ?? c.name} · ${SCOPE_LABEL[c.scope] ?? `Scope ${c.scope}`}`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -226,19 +238,22 @@ export default function NewActivityPage() {
                 name="itemCode"
                 render={({ field }) => (
                   <Select
-                    value={field.value || undefined}
+                    value={field.value ?? ""}
                     onValueChange={(v: string | null) => field.onChange(v ?? "")}
                   >
                     <SelectTrigger className="w-full" disabled={itemsLoading}>
-                      <SelectValue placeholder="품목 선택" />
+                      <SelectValue placeholder="품목 선택">
+                        {(v: string | null) =>
+                          v
+                            ? (items.find((i) => i.code === v)?.name ?? v)
+                            : "품목 선택"
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {filteredItems.map((i) => (
                         <SelectItem key={i.code} value={i.code}>
-                          {i.name}
-                          <span className="text-xs text-muted-foreground">
-                            · {i.unit}
-                          </span>
+                          {`${i.name} · ${i.unit}`}
                         </SelectItem>
                       ))}
                     </SelectContent>

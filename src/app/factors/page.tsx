@@ -71,7 +71,13 @@ export default function FactorsPage() {
                 onValueChange={(v: string | null) => setItemCode(v ?? ALL)}
               >
                 <SelectTrigger className="w-full" disabled={itemsLoading}>
-                  <SelectValue />
+                  <SelectValue placeholder="전체">
+                    {(v: string | null) =>
+                      !v || v === ALL
+                        ? "전체"
+                        : (items.find((i) => i.code === v)?.name ?? v)
+                    }
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>전체</SelectItem>

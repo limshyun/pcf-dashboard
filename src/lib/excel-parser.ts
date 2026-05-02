@@ -13,14 +13,17 @@ import { z } from "zod";
 // 매핑 메타: 시트의 한국어 라벨 ↔ 내부 코드
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** 시트의 헤더 컬럼명 (과제 제공 그대로) */
+/** 시트의 헤더 컬럼명 (과제 제공 그대로). amount는 "량"(시트 원본) 또는 "양" 모두 허용. */
 export const COLUMN = {
   date: "일자(원본)",
   category: "활동 유형",
   itemName: "설명",
-  amount: "양",
+  amount: "량",
   unit: "단위",
 } as const;
+
+/** amount 컬럼은 표기 차이("량"/"양") 모두 허용 — 시트 원본 키와 백업 키. */
+const AMOUNT_KEYS = ["량", "양"] as const;
 
 /** 활동 카테고리 매핑: 한국어 라벨 → 내부 코드 + GHG Scope */
 export const CATEGORY_MAP = {
@@ -149,7 +152,8 @@ export function parseActivitiesExcel(
       const dateRaw = raw[COLUMN.date];
       const categoryRaw = raw[COLUMN.category];
       const itemRaw = raw[COLUMN.itemName];
-      const amountRaw = raw[COLUMN.amount];
+      const amountRaw =
+        AMOUNT_KEYS.map((k) => raw[k]).find((v) => v != null) ?? null;
       const unitRaw = raw[COLUMN.unit];
 
       // 빈 행 무시
@@ -212,9 +216,36 @@ export function parseActivitiesExcel(
 
 /** 워크북에서 활동 데이터 시트를 자동 선택한다. */
 function pickActivitySheet(wb: XLSX.WorkBook): string {
-  // 우선순위: '활동' 또는 'CT-' 키워드 포함 → 없으면 첫 번째 시트
-  const cand = wb.SheetNames.find((n) => /활동|CT-/i.test(n));
-  return cand ?? wb.SheetNames[0];
+  // 1) 시트명으로 후보 매칭 (과제용/활동/CT- 키워드)
+  const byName = wb.SheetNames.find((n) =>
+    /활동|CT-|과제용\s*데이터|raw|activity/i.test(n)
+  );
+  if (byName) return byName;
+  // 2) 시트 내부에 헤더 후보 셀이 존재하는 시트를 선택 (헤더 자동 탐지가 0이 아닌 시트)
+  for (const n of wb.SheetNames) {
+    const sheet = wb.Sheets[n];
+    if (!sheet) continue;
+    if (hasHeader(sheet)) return n;
+  }
+  return wb.SheetNames[0];
+}
+
+function hasHeader(sheet: XLSX.WorkSheet): boolean {
+  const ref = sheet["!ref"];
+  if (!ref) return false;
+  const range = XLSX.utils.decode_range(ref);
+  const limit = Math.min(range.s.r + 100, range.e.r);
+  for (let r = range.s.r; r <= limit; r++) {
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const cell = sheet[XLSX.utils.encode_cell({ r, c })];
+      if (!cell) continue;
+      const v = String(cell.v ?? "").trim();
+      if (v === COLUMN.date || v === "일자" || v === COLUMN.category) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
