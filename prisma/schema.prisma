@@ -1,0 +1,134 @@
+// PCF Dashboard — Prisma schema
+// 설계 메모는 README의 "설계 결정" 섹션 참조
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 마스터 데이터: 활동 카테고리 / 품목 / 단위
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 활동 카테고리 (전기, 원소재, 운송 ...)
+/// scope: GHG Protocol Scope (1/2/3)
+model ActivityCategory {
+  id    Int    @id @default(autoincrement())
+  code  String @unique // ELECTRICITY, MATERIAL, TRANSPORT
+  name  String
+  scope Int
+
+  items ActivityItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("activity_categories")
+}
+
+/// 활동 품목 (한국전력, 플라스틱 1, 플라스틱 2, 트럭 ...)
+/// 단위는 활동량의 단위 (kWh, kg, ton-km)
+model ActivityItem {
+  id         Int    @id @default(autoincrement())
+  categoryId Int
+  code       String @unique // KEPCO, PLASTIC_1, PLASTIC_2, TRUCK
+  name       String
+  unit       String
+
+  category ActivityCategory @relation(fields: [categoryId], references: [id])
+  factors  EmissionFactor[]
+  activities Activity[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@map("activity_items")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 배출계수 (시계열 버전 관리)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 품목별 배출계수의 시점별 버전.
+/// validFrom <= activity.occurredAt < validTo (또는 validTo NULL = 현재 유효)
+/// 활동 일자에 맞는 버전을 자동 매칭하여 과거 계산을 재현한다.
+model EmissionFactor {
+  id        Int       @id @default(autoincrement())
+  itemId    Int
+  value     Decimal   @db.Decimal(18, 6)
+  unit      String    // 예: "kgCO2e/kWh"
+  version   Int       // 품목 내 일련 번호 (1, 2, 3 ...)
+  validFrom DateTime  @db.Date
+  validTo   DateTime? @db.Date
+  source    String?   // 근거 출처 (예: "한국전력 2024 환경성과보고서")
+  note      String?
+
+  item ActivityItem @relation(fields: [itemId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([itemId, version])
+  @@index([itemId, validFrom])
+  @@map("emission_factors")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 활동 데이터 (raw)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// 사용자가 입력하거나 Excel로 임포트한 원시 활동 기록.
+/// 집계는 항상 계산 시점에 수행한다 (집계 정책 변경 대응).
+model Activity {
+  id         Int       @id @default(autoincrement())
+  itemId     Int
+  occurredAt DateTime  @db.Date
+  amount     Decimal   @db.Decimal(18, 4)
+  unit       String
+  memo       String?
+  importBatchId String?
+
+  item        ActivityItem @relation(fields: [itemId], references: [id])
+  importBatch ImportBatch? @relation(fields: [importBatchId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([occurredAt])
+  @@index([itemId, occurredAt])
+  @@map("activities")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 임포트 이력 (Excel 업로드 추적)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ImportStatus {
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+/// 한 번의 Excel/CSV 업로드 결과.
+/// 실패한 행은 errors(JSON)로 보존하여 사용자가 다운로드/수정 가능.
+model ImportBatch {
+  id        String       @id @default(uuid())
+  filename  String
+  rowCount  Int
+  successCount Int       @default(0)
+  failedCount  Int       @default(0)
+  status    ImportStatus
+  errors    Json?
+
+  activities Activity[]
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("import_batches")
+}
