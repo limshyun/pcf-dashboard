@@ -45,8 +45,8 @@ export function CategoryDonutChart({ data, loading }: Props) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(v: number, _n: string, item) => {
-                const f = formatCo2e(v);
+              formatter={(v, _n, item) => {
+                const f = formatCo2e(typeof v === "number" ? v : Number(v ?? 0));
                 const ratio = (item?.payload as { ratio?: number })?.ratio ?? 0;
                 return [`${f.value} ${f.unit} (${formatRatio(ratio)})`, "배출량"];
               }}

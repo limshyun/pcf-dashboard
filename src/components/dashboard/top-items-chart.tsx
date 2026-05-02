@@ -60,8 +60,8 @@ export function TopItemsChart({ data, loading }: Props) {
               width={90}
             />
             <Tooltip
-              formatter={(v: number) => {
-                const f = formatCo2e(v);
+              formatter={(v) => {
+                const f = formatCo2e(typeof v === "number" ? v : Number(v ?? 0));
                 return [`${f.value} ${f.unit}`, "배출량"];
               }}
               contentStyle={{

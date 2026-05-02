@@ -52,8 +52,8 @@ export function MonthlyTrendChart({ data, loading }: Props) {
               tickFormatter={(v: number) => formatCo2e(v).value}
             />
             <Tooltip
-              formatter={(v: number) => {
-                const f = formatCo2e(v);
+              formatter={(v) => {
+                const f = formatCo2e(typeof v === "number" ? v : Number(v ?? 0));
                 return [`${f.value} ${f.unit}`, "배출량"];
               }}
               labelStyle={{ color: "var(--foreground)" }}
