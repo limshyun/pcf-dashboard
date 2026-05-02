@@ -4,17 +4,33 @@ import { handleError, ok } from "@/lib/api-response";
 import {
   ActivityCreateSchema,
   ActivityListQuerySchema,
+  countActivities,
   createActivity,
   listActivities,
+  listActivitiesWithEmissions,
 } from "@/services/activity-service";
 
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const filter = ActivityListQuerySchema.parse(
-      Object.fromEntries(url.searchParams)
-    );
+    const params = Object.fromEntries(url.searchParams);
+    const includeEmissions =
+      params.includeEmissions === "1" || params.includeEmissions === "true";
+    delete params.includeEmissions;
+    const filter = ActivityListQuerySchema.parse(params);
+
+    if (includeEmissions) {
+      const { rows, total } = await listActivitiesWithEmissions(filter);
+      return ok(rows, {
+        total,
+        limit: filter.limit ?? 50,
+        offset: filter.offset ?? 0,
+      });
+    }
+
+    const { limit, offset, ...countFilter } = filter;
     const list = await listActivities(filter);
+    const total = await countActivities(countFilter);
 
     return ok(
       list.map((activity) => ({
@@ -28,7 +44,7 @@ export async function GET(req: NextRequest) {
         unit: activity.unit,
         memo: activity.memo,
       })),
-      { count: list.length }
+      { total, limit: limit ?? null, offset: offset ?? null }
     );
   } catch (error) {
     return handleError(error);

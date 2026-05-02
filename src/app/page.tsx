@@ -6,6 +6,7 @@ import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart"
 import { DateRangeFilter } from "@/components/dashboard/date-range-filter";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { MonthlyTrendChart } from "@/components/dashboard/monthly-trend-chart";
+import { ActivityLinesTable } from "@/components/dashboard/activity-lines-table";
 import { TopItemsChart } from "@/components/dashboard/top-items-chart";
 import { useDashboard } from "@/hooks/use-dashboard";
 import type { DashboardRange } from "@/lib/api-client";
@@ -53,6 +54,11 @@ export default function DashboardPage() {
           ⚠ 계산 실패 {data.summary.failureCount}건이 있습니다. 단위/배출계수 데이터를 확인하세요.
         </div>
       )}
+
+      <ActivityLinesTable
+        key={`${range.from ?? ""}_${range.to ?? ""}`}
+        range={range}
+      />
     </main>
   );
 }

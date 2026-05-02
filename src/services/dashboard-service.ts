@@ -13,6 +13,10 @@ import {
 import { calculateEmissions } from "@/domain/pcf-calculator";
 import { toActivityInput, toFactorInput } from "@/lib/db-mappers";
 import { prisma } from "@/lib/prisma";
+import {
+  listActivitiesWithEmissions,
+  type ActivityListRow,
+} from "@/services/activity-service";
 
 export const DashboardRangeSchema = z.object({
   from: z.coerce.date().optional(),
@@ -109,4 +113,31 @@ export async function getByItem(range: ByItemQuery) {
       co2eKg: bucket.co2eKg.toString(),
     })),
   };
+}
+
+export const ActivityLinesQuerySchema = DashboardRangeSchema.extend({
+  page: z.coerce.number().int().min(1).optional().default(1),
+  pageSize: z.coerce.number().int().min(1).max(50).optional().default(10),
+});
+
+export type ActivityLinesQuery = z.infer<typeof ActivityLinesQuerySchema>;
+
+/** 대시보드 기간과 동일 필터로 활동 원장 + 건별 PCF(표시용). */
+export async function getActivityLines(
+  query: ActivityLinesQuery
+): Promise<{
+  rows: ActivityListRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}> {
+  const page = query.page ?? 1;
+  const pageSize = query.pageSize ?? 10;
+  const { rows, total } = await listActivitiesWithEmissions({
+    from: query.from,
+    to: query.to,
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  });
+  return { rows, total, page, pageSize };
 }

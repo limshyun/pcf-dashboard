@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { FactorCreateDialog } from "@/components/factors/factor-create-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,11 @@ import {
 } from "@/components/ui/table";
 import { useFactors } from "@/hooks/use-factors";
 import { useItems } from "@/hooks/use-items";
+import {
+  type FactorRecentRow,
+  fetchRecentFactorVersions,
+} from "@/lib/api-client";
+import { CATEGORY_LABEL } from "@/lib/format";
 
 const ALL = "__ALL__";
 
@@ -42,6 +47,31 @@ export default function FactorsPage() {
   const itemMap = useMemo(() => {
     return new Map(items.map((item) => [item.code, item]));
   }, [items]);
+
+  const [recentFactors, setRecentFactors] = useState<FactorRecentRow[]>([]);
+  const [recentLoading, setRecentLoading] = useState(true);
+  const [recentError, setRecentError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setRecentLoading(true);
+      setRecentError(null);
+      try {
+        const list = await fetchRecentFactorVersions(15);
+        if (!cancelled) setRecentFactors(list);
+      } catch (e) {
+        if (!cancelled) {
+          setRecentError(e instanceof Error ? e.message : "이력 로드 실패");
+        }
+      } finally {
+        if (!cancelled) setRecentLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [rows.length]);
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-6 md:p-8">
@@ -166,6 +196,74 @@ export default function FactorsPage() {
                 })}
               </TableBody>
             </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>최근 버전 변경</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            DB에 기록된 배출계수 행 중, 최근에 생성되거나 수정된 순입니다. 별도
+            감사 로그 테이블 없이 버전 행 자체가 이력입니다.
+          </p>
+        </CardHeader>
+        <CardContent>
+          {recentError && (
+            <div className="mb-3 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+              {recentError}
+            </div>
+          )}
+          {recentLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-9 w-full" />
+              ))}
+            </div>
+          ) : recentFactors.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              표시할 이력이 없습니다.
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-md border border-border/60">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>일시 (UTC)</TableHead>
+                    <TableHead>항목</TableHead>
+                    <TableHead>유형</TableHead>
+                    <TableHead className="text-right">계수</TableHead>
+                    <TableHead>단위</TableHead>
+                    <TableHead>유효기간</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentFactors.map((row) => (
+                    <TableRow key={row.id}>
+                      <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
+                        {new Date(row.updatedAt).toLocaleString("ko-KR")}
+                      </TableCell>
+                      <TableCell className="text-sm">{row.itemName}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-[10px]">
+                          {CATEGORY_LABEL[row.categoryCode] ??
+                            row.categoryCode}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        v{row.version} · {row.value}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">
+                        {row.unit}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap font-mono text-xs text-muted-foreground">
+                        {row.validFrom} ~ {row.validTo ?? "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

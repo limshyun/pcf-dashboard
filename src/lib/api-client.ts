@@ -84,6 +84,26 @@ async function getJson<T>(url: string): Promise<T> {
   return payload.data as T;
 }
 
+async function getJsonDataWithMeta<T>(
+  url: string
+): Promise<{ data: T; meta: Record<string, unknown> }> {
+  const response = await fetch(url, { cache: "no-store" });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new ApiError(
+      payload?.error ?? {
+        code: "UNKNOWN",
+        message: `${response.status} ${response.statusText}`,
+      },
+      response.status
+    );
+  }
+  return {
+    data: payload.data as T,
+    meta: (payload.meta ?? {}) as Record<string, unknown>,
+  };
+}
+
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const response = await fetch(url, {
     method: "POST",
@@ -171,6 +191,110 @@ export function createActivity(
   payload: ActivityCreatePayload
 ): Promise<ActivityCreateResponse> {
   return postJson<ActivityCreateResponse>("/api/v1/activities", payload);
+}
+
+export interface ActivityRow {
+  id: number;
+  itemCode: string;
+  itemName: string;
+  categoryCode: string;
+  scope: number;
+  occurredAt: string;
+  amount: string;
+  unit: string;
+  memo: string | null;
+  factorValue?: string | null;
+  factorUnit?: string | null;
+  factorVersion?: number | null;
+  co2eKg?: string | null;
+  calculationError?: string | null;
+}
+
+export interface ActivityListMeta {
+  total: number;
+  limit?: number | null;
+  offset?: number | null;
+}
+
+export async function fetchActivities(params: {
+  limit?: number;
+  offset?: number;
+  includeEmissions?: boolean;
+} = {}): Promise<{ rows: ActivityRow[]; meta: ActivityListMeta }> {
+  const { data, meta } = await getJsonDataWithMeta<ActivityRow[]>(
+    `/api/v1/activities${buildQuery({
+      limit: params.limit,
+      offset: params.offset,
+      includeEmissions: params.includeEmissions ? 1 : undefined,
+    })}`
+  );
+  return {
+    rows: data,
+    meta: {
+      total: Number(meta.total ?? data.length),
+      limit: meta.limit != null ? Number(meta.limit) : null,
+      offset: meta.offset != null ? Number(meta.offset) : null,
+    },
+  };
+}
+
+export async function deleteActivity(id: number): Promise<void> {
+  const response = await fetch(`/api/v1/activities/${id}`, {
+    method: "DELETE",
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new ApiError(
+      payload?.error ?? {
+        code: "UNKNOWN",
+        message: `${response.status} ${response.statusText}`,
+      },
+      response.status
+    );
+  }
+}
+
+export interface DashboardActivityLinesResponse {
+  rows: ActivityRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export async function fetchDashboardActivityLines(
+  range: DashboardRange = {},
+  page = 1,
+  pageSize = 10
+): Promise<DashboardActivityLinesResponse> {
+  return getJson<DashboardActivityLinesResponse>(
+    `/api/v1/dashboard/activity-lines${buildQuery({
+      from: range.from,
+      to: range.to,
+      page,
+      pageSize,
+    })}`
+  );
+}
+
+export interface FactorRecentRow {
+  id: number;
+  itemCode: string;
+  itemName: string;
+  categoryCode: string;
+  version: number;
+  value: string;
+  unit: string;
+  validFrom: string;
+  validTo: string | null;
+  updatedAt: string;
+}
+
+export function fetchRecentFactorVersions(
+  limit = 20
+): Promise<FactorRecentRow[]> {
+  return getJson<FactorRecentRow[]>(
+    `/api/v1/emission-factors/recent${buildQuery({ limit })}`
+  );
 }
 
 // ─── 배출계수 ──────────────────────────────────────────────────────────────

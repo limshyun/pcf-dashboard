@@ -28,6 +28,7 @@ import {
   type ItemOption,
   createActivity,
 } from "@/lib/api-client";
+import { RecentActivitiesCard } from "@/components/activities/recent-activities-card";
 import { CATEGORY_LABEL, SCOPE_LABEL } from "@/lib/format";
 
 const FormSchema = z.object({
@@ -82,6 +83,7 @@ export default function NewActivityPage() {
   const { items, loading: itemsLoading, error: itemsError } = useItems();
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [listTick, setListTick] = useState(0);
 
   const {
     control,
@@ -153,6 +155,7 @@ export default function NewActivityPage() {
       setSuccess(
         `등록 완료 — #${res.id} ${item.name} ${res.amount} ${res.unit}`
       );
+      setListTick((t) => t + 1);
       reset({
         categoryCode: values.categoryCode,
         itemCode: "",
@@ -177,7 +180,7 @@ export default function NewActivityPage() {
   });
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 p-6 md:p-8">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-6 md:p-8">
       <header>
         <h1 className="font-heading text-2xl font-semibold tracking-tight">
           활동 데이터 입력
@@ -346,6 +349,8 @@ export default function NewActivityPage() {
           </form>
         </CardContent>
       </Card>
+
+      <RecentActivitiesCard reloadKey={listTick} />
     </main>
   );
 }

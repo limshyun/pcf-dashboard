@@ -36,6 +36,15 @@ export async function listFactors(itemCode?: string) {
   });
 }
 
+/** 최근 생성·수정된 배출계수 버전(감사 UI용). */
+export async function listRecentFactorVersions(limit = 20) {
+  return prisma.emissionFactor.findMany({
+    take: limit,
+    orderBy: { updatedAt: "desc" },
+    include: { item: { include: { category: true } } },
+  });
+}
+
 export async function createFactorVersion(input: FactorCreateInput) {
   const item = await prisma.activityItem.findUnique({
     where: { code: input.itemCode },
