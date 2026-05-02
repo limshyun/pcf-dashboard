@@ -15,27 +15,41 @@
 
 ## 로컬 실행 방법 (5단계)
 
-> 자세한 단계는 구현 진행과 함께 채워집니다. 현재는 부트스트랩 단계입니다.
-
 ```bash
-# 1) 저장소 클론
-git clone <repo-url>
-cd hanaloop-recruitment-pcf-dashboard
+# 1) 저장소 클론 + Node 24
+git clone <repo-url> && cd hanaloop-recruitment-pcf-dashboard
+nvm use            # .nvmrc 기준 Node 24
 
-# 2) Node 24 사용 (.nvmrc 존재)
-nvm use
-
-# 3) 의존성 설치
+# 2) 환경 변수 + 의존성
+cp .env.example .env
 yarn install
 
-# 4) (예정) DB 기동 및 마이그레이션
-# docker compose up -d
-# yarn prisma migrate deploy && yarn prisma db seed
+# 3) PostgreSQL 기동 + 마이그레이션
+yarn db:up                            # docker compose up -d
+yarn db:migrate                       # init 마이그레이션 적용
+
+# 4) 시드 데이터 로드 (마스터 + 활동 데이터)
+#    아래 "활동 데이터(Excel) 준비" 섹션을 먼저 수행하세요.
+yarn db:seed
 
 # 5) 개발 서버
-yarn dev
-# http://localhost:3000
+yarn dev                              # http://localhost:3000
 ```
+
+### 활동 데이터(Excel) 준비
+
+채용 과제로 받은 구글 시트의 활동 데이터를 시드와 임포트 화면에서 모두 사용합니다.
+
+1. 구글 시트 → `파일` → `다운로드` → **`Microsoft Excel (.xlsx)`** 선택
+2. 다운로드된 파일을 다음 경로로 옮긴다:
+
+   ```
+   prisma/seed-data/activity-data.xlsx
+   ```
+
+3. `yarn db:seed` 실행 → 카테고리 3 / 품목 4 / 배출계수 4 + 활동 데이터가 적재됨
+
+> 파일이 없어도 시드는 동작하며, 마스터 데이터까지만 적재되고 활동 데이터는 건너뜁니다.
 
 ## 프로젝트 구조 (계획)
 
