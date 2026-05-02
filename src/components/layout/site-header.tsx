@@ -9,6 +9,7 @@ const NAV = [
   { href: "/", label: "대시보드" },
   { href: "/activities/new", label: "활동 입력" },
   { href: "/factors", label: "배출계수" },
+  { href: "/import", label: "임포트" },
 ] as const;
 
 export function SiteHeader() {

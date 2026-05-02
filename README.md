@@ -73,7 +73,7 @@ prisma/               schema.prisma, migrations, seed.ts
 - [x] Step 5. API Routes (`/api/v1`) 구현
 - [x] Step 6. 대시보드 UI (KPI 4 + 월별/카테고리/품목 차트 + 기간 필터)
 - [x] Step 7. 활동 입력 폼 + 배출계수 버전 관리 화면 (RHF + Zod, 다이얼로그)
-- [ ] Step 8. Excel 임포트
+- [x] Step 8. Excel 임포트 (`/import` 페이지 + `POST/GET /api/v1/import` + 실패 행 CSV 다운로드)
 - [ ] Step 9. Swagger 문서
 - [ ] Step 10. README 보강 + ERD + 영상/스크린샷
 - [ ] Step 11. 발표용 메모 정리

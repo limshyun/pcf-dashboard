@@ -193,3 +193,52 @@ export function createFactor(
 ): Promise<FactorRow> {
   return postJson<FactorRow>("/api/v1/emission-factors", payload);
 }
+
+// ─── 임포트 ────────────────────────────────────────────────────────────────
+
+export interface ImportRowError {
+  rowIndex: number;
+  raw: Record<string, unknown>;
+  message: string;
+}
+
+export type ImportStatus = "SUCCESS" | "PARTIAL" | "FAILED";
+
+export interface ImportRunResponse {
+  batchId: string;
+  filename: string;
+  status: ImportStatus;
+  totalRows: number;
+  successCount: number;
+  failedCount: number;
+  sheetName: string;
+  errors: ImportRowError[];
+}
+
+export interface ImportBatchSummary {
+  id: string;
+  filename: string;
+  rowCount: number;
+  successCount: number;
+  failedCount: number;
+  status: ImportStatus;
+  createdAt: string;
+}
+
+export async function importExcel(file: File): Promise<ImportRunResponse> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch("/api/v1/import", { method: "POST", body: fd });
+  const json = await res.json();
+  if (!res.ok) {
+    throw new ApiError(
+      json?.error ?? { code: "UNKNOWN", message: `${res.status} ${res.statusText}` },
+      res.status
+    );
+  }
+  return json.data as ImportRunResponse;
+}
+
+export function fetchImportBatches(): Promise<ImportBatchSummary[]> {
+  return getJson<ImportBatchSummary[]>("/api/v1/import");
+}
