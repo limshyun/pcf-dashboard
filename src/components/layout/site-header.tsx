@@ -10,6 +10,7 @@ const NAV = [
   { href: "/activities/new", label: "활동 입력" },
   { href: "/factors", label: "배출계수" },
   { href: "/import", label: "임포트" },
+  { href: "/docs", label: "API 문서" },
 ] as const;
 
 export function SiteHeader() {
