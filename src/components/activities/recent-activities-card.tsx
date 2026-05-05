@@ -33,7 +33,6 @@ import {
 } from "@/lib/format";
 
 interface Props {
-  /** 저장 성공 시 증가시켜 목록을 다시 불러옵니다. */
   reloadKey: number;
 }
 
@@ -63,7 +62,7 @@ export function RecentActivitiesCard({ reloadKey }: Props) {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load가 로딩/에러 상태 갱신
     void load();
   }, [reloadKey, load]);
 

@@ -1,15 +1,6 @@
 "use client";
 
-/**
- * KPI 카드 + 그리드 컴파운드.
- *
- * - <KpiGrid>는 반응형 grid 레이아웃 책임 (cols=1/2/4)
- * - <KpiCard>는 단일 지표 (라벨 + 큰 값 + 단위 + optional hint)
- * - <KpiCard.Skeleton>은 로딩 상태 자리표시자
- *
- * 새 KPI 추가 시 한 줄로 가능:
- *   <KpiCard label="신규 KPI" value="42" unit="건" />
- */
+/** KPI 카드·그리드 컴파운드 */
 
 import * as React from "react";
 

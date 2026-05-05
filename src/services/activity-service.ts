@@ -132,7 +132,6 @@ function mapActivityToListRow(a: ActivityWithRelations): Omit<
   };
 }
 
-/** 활동 목록 + 건별 배출 계산(표시용). factors는 전역 로드. */
 export async function listActivitiesWithEmissions(
   filter: ActivityListQuery
 ): Promise<{ rows: ActivityListRow[]; total: number }> {

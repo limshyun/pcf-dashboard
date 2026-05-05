@@ -1,20 +1,9 @@
-/**
- * 과제용 Excel 활동 데이터 파서.
- *
- * - 시드(prisma/seed.ts)와 임포트 API(/api/v1/imports/excel) 양쪽에서 재사용한다.
- * - 한국어 컬럼 헤더와 한국어 라벨을 그대로 받아 내부 코드(KEPCO 등)로 매핑한다.
- * - DB에 직접 접근하지 않는다(파일 → ParsedRow[]만 책임).
- */
+/** 과제용 활동 엑셀 파서. 시드·임포트 공유. DB 미사용. */
 
 import * as XLSX from "xlsx";
 import { z } from "zod";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 매핑 메타: 시트의 한국어 라벨 ↔ 내부 코드
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** 시트의 헤더 컬럼명 (과제 제공 그대로). amount는 "량"(시트 원본) 또는 "양" 모두 허용. */
-export const COLUMN = {
+const COLUMN = {
   date: "일자(원본)",
   category: "활동 유형",
   itemName: "설명",
@@ -22,25 +11,21 @@ export const COLUMN = {
   unit: "단위",
 } as const;
 
-/** amount 컬럼은 표기 차이("량"/"양") 모두 허용 — 시트 원본 키와 백업 키. */
 const AMOUNT_KEYS = ["량", "양"] as const;
 
-/** 활동 카테고리 매핑: 한국어 라벨 → 내부 코드 + GHG Scope */
-export const CATEGORY_MAP = {
+const CATEGORY_MAP = {
   전기: { code: "ELECTRICITY", scope: 2 },
   원소재: { code: "MATERIAL", scope: 3 },
   운송: { code: "TRANSPORT", scope: 3 },
 } as const;
 
-/** 품목 매핑: 한국어 라벨 → 내부 코드 + 단위 */
-export const ITEM_MAP = {
+const ITEM_MAP = {
   한국전력: { code: "KEPCO", categoryCode: "ELECTRICITY", unit: "kWh" },
   "플라스틱 1": { code: "PLASTIC_1", categoryCode: "MATERIAL", unit: "kg" },
   "플라스틱 2": { code: "PLASTIC_2", categoryCode: "MATERIAL", unit: "kg" },
   트럭: { code: "TRUCK", categoryCode: "TRANSPORT", unit: "ton-km" },
 } as const;
 
-/** 시드/임포트가 공유하는 마스터 데이터 (카테고리 + 품목) */
 export const MASTER_DATA = {
   categories: Object.entries(CATEGORY_MAP).map(([name, m]) => ({
     name,
@@ -55,7 +40,6 @@ export const MASTER_DATA = {
   })),
 };
 
-/** 초기 배출계수 (version=1, validFrom=2025-01-01) */
 export const INITIAL_EMISSION_FACTORS = [
   {
     itemCode: "KEPCO",
@@ -87,10 +71,6 @@ export const INITIAL_EMISSION_FACTORS = [
   },
 ] as const;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 파싱 결과 타입
-// ─────────────────────────────────────────────────────────────────────────────
-
 const RowSchema = z.object({
   occurredAt: z.coerce.date(),
   categoryCode: z.string(),
@@ -102,7 +82,7 @@ const RowSchema = z.object({
 export type ParsedActivityRow = z.infer<typeof RowSchema>;
 
 export interface ParsedRowError {
-  rowIndex: number; // 시트의 데이터 행 번호 (1부터)
+  rowIndex: number;
   raw: Record<string, unknown>;
   message: string;
 }
@@ -114,14 +94,6 @@ export interface ParseResult {
   sheetName: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 파서 본체
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * 활동 데이터 Excel을 파싱한다.
- * @param input 파일 경로(string) 또는 메모리 버퍼
- */
 export function parseActivitiesExcel(
   input: string | Buffer | ArrayBuffer
 ): ParseResult {
@@ -158,7 +130,6 @@ export function parseActivitiesExcel(
         ) ?? null;
       const unitRaw = raw[COLUMN.unit];
 
-      // 빈 행 무시
       if (!dateRaw && !categoryRaw && !itemRaw && !amountRaw) return;
 
       const categoryKey = String(categoryRaw ?? "").trim();
@@ -213,18 +184,11 @@ export function parseActivitiesExcel(
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 보조 함수
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** 워크북에서 활동 데이터 시트를 자동 선택한다. */
 function pickActivitySheet(wb: XLSX.WorkBook): string {
-  // 1) 시트명으로 후보 매칭 (과제용/활동/CT- 키워드)
   const byName = wb.SheetNames.find((sheetName) =>
     /활동|CT-|과제용\s*데이터|raw|activity/i.test(sheetName)
   );
   if (byName) return byName;
-  // 2) 시트 내부에 헤더 후보 셀이 존재하는 시트를 선택 (헤더 자동 탐지가 0이 아닌 시트)
   for (const sheetName of wb.SheetNames) {
     const sheet = wb.Sheets[sheetName];
     if (!sheet) continue;
@@ -251,10 +215,7 @@ function hasHeader(sheet: XLSX.WorkSheet): boolean {
   return false;
 }
 
-/**
- * 헤더 행 번호를 자동 탐지한다 (헤더가 1행이 아닐 수 있음 — 과제 시트는 3행).
- * 0-based 반환.
- */
+/** 헤더 행 0-based (과제 시트는 3행 등 변동 가능) */
 function detectHeaderRow(sheet: XLSX.WorkSheet): number {
   const ref = sheet["!ref"];
   if (!ref) return 0;

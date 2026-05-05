@@ -1,6 +1,3 @@
-// trade-off: 새 버전 추가 시 이전 버전의 validTo를 자동으로 닫지 않는다.
-// 동일 시점 다중 버전 공존(시뮬레이션 등)을 허용하기 위해 명시적 입력을 요구한다.
-
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
@@ -36,7 +33,6 @@ export async function listFactors(itemCode?: string) {
   });
 }
 
-/** 최근 생성·수정된 배출계수 버전(감사 UI용). */
 export async function listRecentFactorVersions(limit = 20) {
   return prisma.emissionFactor.findMany({
     take: limit,

@@ -1,10 +1,3 @@
-/**
- * 도메인 에러.
- *
- * 순수 도메인 계층에서 발생하는 에러를 명시적 클래스로 정의한다.
- * UI/API 레이어에서는 `instanceof`로 분기하여 사용자 친화적 메시지로 변환한다.
- */
-
 export class DomainError extends Error {
   constructor(message: string) {
     super(message);
@@ -12,7 +5,6 @@ export class DomainError extends Error {
   }
 }
 
-/** 활동 일자에 유효한 배출계수 버전을 찾을 수 없을 때. */
 export class MissingFactorError extends DomainError {
   constructor(
     public readonly itemCode: string,
@@ -24,7 +16,6 @@ export class MissingFactorError extends DomainError {
   }
 }
 
-/** 활동 단위와 배출계수의 분모 단위가 일치하지 않을 때. */
 export class UnitMismatchError extends DomainError {
   constructor(
     public readonly itemCode: string,
@@ -37,7 +28,6 @@ export class UnitMismatchError extends DomainError {
   }
 }
 
-/** 배출계수의 단위 형식이 "X/Y" 꼴이 아닐 때 (예: "kgCO2e" 처럼 분모 누락). */
 export class InvalidFactorUnitError extends DomainError {
   constructor(public readonly factorUnit: string) {
     super(
@@ -46,7 +36,6 @@ export class InvalidFactorUnitError extends DomainError {
   }
 }
 
-/** 알 수 없는 품목 코드. */
 export class UnknownItemError extends DomainError {
   constructor(public readonly itemCode: string) {
     super(`알 수 없는 품목 코드: "${itemCode}"`);

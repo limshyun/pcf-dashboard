@@ -33,9 +33,7 @@ export function useFactors(itemCode?: string): State {
   }, [itemCode]);
 
   useEffect(() => {
-    // use-dashboard와 동일 트레이드오프: SWR/React Query 미도입.
-    // load() 내부 setLoading은 fetch 동기화 전 UI 상태 전환을 위해 필수.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load가 로딩/에러 상태 갱신
     void load();
   }, [load, tick]);
 

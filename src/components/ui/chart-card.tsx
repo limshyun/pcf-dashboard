@@ -1,25 +1,6 @@
 "use client";
 
-/**
- * 차트 컨테이너 컴파운드 컴포넌트.
- *
- * 4종 차트가 공유하던 boilerplate(Card → Header → Skeleton/Empty → ResponsiveContainer)를
- * 한 곳으로 모아 새 차트 추가 비용을 낮춘다.
- *
- * 사용 예:
- *   <ChartCard>
- *     <ChartCard.Header>
- *       <ChartCard.Title>월별 추이</ChartCard.Title>
- *       <ChartCard.Action><Button .../></ChartCard.Action>  // 옵션
- *     </ChartCard.Header>
- *     <ChartCard.Body loading={loading} isEmpty={!data?.length}>
- *       <ResponsiveContainer ...>...</ResponsiveContainer>
- *     </ChartCard.Body>
- *   </ChartCard>
- *
- * Body는 마운트 후에만 children을 렌더 → Recharts ResponsiveContainer의
- * 첫 paint width(-1) 콘솔 경고를 제거한다.
- */
+/** 차트용 Card 래퍼. Body는 마운트 후 children(Recharts width 경고 완화). */
 
 import { useEffect, useRef, useState } from "react";
 
@@ -56,7 +37,7 @@ function Action({ children }: { children: React.ReactNode }) {
   return <div className="ml-auto">{children}</div>;
 }
 
-export interface ChartSize {
+interface ChartSize {
   width: number;
   height: number;
 }

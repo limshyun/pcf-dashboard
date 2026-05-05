@@ -63,8 +63,7 @@ export function ActivityLinesTable({ range }: Props) {
   }, [range, page, pageSize]);
 
   useEffect(() => {
-    // range/page 변경 시 서버와 동기화. load 내부 setState는 fetch 결과 반영에 필요하다.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- load가 로딩/에러 상태 갱신
     void load();
   }, [load]);
 

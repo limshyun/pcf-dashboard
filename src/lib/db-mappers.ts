@@ -1,5 +1,3 @@
-// 도메인 계층은 @prisma/client 타입을 모르므로 서비스 계층이 이 매퍼로 평범한 객체로 변환해 전달한다.
-
 import type {
   Activity,
   ActivityCategory,
@@ -16,7 +14,7 @@ export type ActivityWithRelations = Activity & {
   item: ActivityItem & { category: ActivityCategory };
 };
 
-export type EmissionFactorWithItem = EmissionFactor & {
+type EmissionFactorWithItem = EmissionFactor & {
   item: ActivityItem;
 };
 

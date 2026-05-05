@@ -1,5 +1,3 @@
-// API fetch 유틸. 모든 응답은 { data, meta? } 또는 { error } 구조 (api-response.ts와 일치).
-
 export interface SummaryResponse {
   rangeFrom: string | null;
   rangeTo: string | null;
@@ -130,7 +128,6 @@ export interface DashboardData {
   byItem: ByItemResponse;
 }
 
-// trade-off: 같은 DB·도메인 결과라 한쪽 실패는 데이터 자체 의심 신호 → allSettled가 아닌 Promise.all 채택
 export async function fetchDashboard(
   range: DashboardRange = {},
   topN = 5
@@ -154,8 +151,6 @@ export async function fetchDashboard(
   return { summary, byMonth, byCategory, byItem };
 }
 
-// ─── 마스터 ────────────────────────────────────────────────────────────────
-
 export interface ItemOption {
   code: string;
   name: string;
@@ -168,8 +163,6 @@ export interface ItemOption {
 export function fetchItems(): Promise<ItemOption[]> {
   return getJson<ItemOption[]>("/api/v1/items");
 }
-
-// ─── 활동 ─────────────────────────────────────────────────────────────────
 
 export interface ActivityCreatePayload {
   itemCode: string;
@@ -297,8 +290,6 @@ export function fetchRecentFactorVersions(
   );
 }
 
-// ─── 배출계수 ──────────────────────────────────────────────────────────────
-
 export interface FactorRow {
   id: number;
   itemCode: string;
@@ -332,8 +323,6 @@ export function createFactor(
 ): Promise<FactorRow> {
   return postJson<FactorRow>("/api/v1/emission-factors", payload);
 }
-
-// ─── 임포트 ────────────────────────────────────────────────────────────────
 
 export interface ImportRowError {
   rowIndex: number;

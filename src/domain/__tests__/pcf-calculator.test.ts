@@ -15,10 +15,6 @@ import {
   pickFactorAt,
 } from "../pcf-calculator";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 픽스처
-// ─────────────────────────────────────────────────────────────────────────────
-
 const electricityCategory = { code: "ELECTRICITY", scope: 2 };
 const transportCategory = { code: "TRANSPORT", scope: 3 };
 
@@ -63,15 +59,11 @@ const truckFactor: EmissionFactorInput = {
   validTo: null,
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// extractActivityUnitFromFactor
-// ─────────────────────────────────────────────────────────────────────────────
-
 describe("extractActivityUnitFromFactor", () => {
   it("정상 형식의 분모를 반환한다", () => {
     expect(extractActivityUnitFromFactor("kgCO2e/kWh")).toBe("kWh");
     expect(extractActivityUnitFromFactor("kgCO2e/ton-km")).toBe("ton-km");
-    expect(extractActivityUnitFromFactor("kgCO2e / kg")).toBe("kg"); // 공백 허용
+    expect(extractActivityUnitFromFactor("kgCO2e / kg")).toBe("kg");
   });
 
   it("분모가 없으면 InvalidFactorUnitError를 던진다", () => {
@@ -84,10 +76,6 @@ describe("extractActivityUnitFromFactor", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// pickFactorAt — 시점 매칭 (반열림 [validFrom, validTo))
-// ─────────────────────────────────────────────────────────────────────────────
-
 describe("pickFactorAt", () => {
   const factors = [kepcoFactorV1, kepcoFactorV2, truckFactor];
 
@@ -97,7 +85,6 @@ describe("pickFactorAt", () => {
   });
 
   it("activity 일자가 v1과 v2의 경계(validTo=validFrom)이면 v2를 선택한다", () => {
-    // validTo는 배타적, validFrom은 포함적
     const f = pickFactorAt(factors, "KEPCO", new Date("2025-01-01"));
     expect(f?.version).toBe(2);
   });
@@ -117,10 +104,6 @@ describe("pickFactorAt", () => {
     expect(f).toBeNull();
   });
 });
-
-// ─────────────────────────────────────────────────────────────────────────────
-// calculateEmission — 활동 1건
-// ─────────────────────────────────────────────────────────────────────────────
 
 describe("calculateEmission", () => {
   it("KEPCO 110 kWh × 0.456 = 50.16 kgCO2e (v2)", () => {
@@ -150,7 +133,6 @@ describe("calculateEmission", () => {
       value: 0.1,
     };
     const r = calculateEmission(kepcoActivity("2025-05-01", 0.2), [factor]);
-    // JS의 0.1 * 0.2 = 0.020000000000000004 가 아닌 정확히 "0.02"
     expect(r.co2eKg.toString()).toBe("0.02");
   });
 
@@ -182,10 +164,6 @@ describe("calculateEmission", () => {
   });
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// calculateEmissions — 다건, 실패 행 보존
-// ─────────────────────────────────────────────────────────────────────────────
-
 describe("calculateEmissions", () => {
   it("성공/실패 행을 분리하여 반환한다", () => {
     const activities: ActivityInput[] = [
@@ -203,7 +181,6 @@ describe("calculateEmissions", () => {
     expect(results).toHaveLength(2);
     expect(failures).toHaveLength(2);
 
-    // 트럭: 41 × 3.5 = 143.5
     const truck = results.find((row) => row.itemCode === "TRUCK");
     expect(truck?.co2eKg.toString()).toBe("143.5");
 

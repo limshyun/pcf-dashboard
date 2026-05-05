@@ -1,12 +1,4 @@
-/**
- * 시드 스크립트.
- *
- * 1. 마스터 데이터 upsert: 카테고리, 품목, 배출계수(version=1)
- * 2. prisma/seed-data/activity-data.xlsx 가 있으면 파서로 활동 데이터 로드
- *    - 같은 파서를 임포트 API에서도 재사용한다 (Step 8)
- *
- * 실행: yarn db:seed
- */
+/** 카테고리·품목·배출계수 시드, 선택 시 prisma/seed-data/activity-data.xlsx. `yarn db:seed` */
 
 import { PrismaClient, ImportStatus, Prisma } from "@prisma/client";
 import path from "node:path";

@@ -6,7 +6,3 @@ export async function listItems() {
     orderBy: [{ category: { code: "asc" } }, { code: "asc" }],
   });
 }
-
-export async function listCategories() {
-  return prisma.activityCategory.findMany({ orderBy: { code: "asc" } });
-}

@@ -1,4 +1,4 @@
-// 싱글톤: Next.js dev hot reload 시 PrismaClient 인스턴스 누적("too many connections") 방지
+/** Dev HMR 시 PrismaClient 단일 인스턴스 */
 
 import { PrismaClient } from "@prisma/client";
 

@@ -1,7 +1,3 @@
-// 응답 컨벤션:
-//   성공 { data, meta? }
-//   실패 { error: { code, message, details? } }
-
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 

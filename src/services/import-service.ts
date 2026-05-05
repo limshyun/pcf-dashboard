@@ -1,6 +1,3 @@
-// trade-off: ImportBatch 생성과 Activity insert를 한 트랜잭션으로 묶어 부분 성공도 원자적으로 기록한다.
-// 시드(prisma/seed.ts)와 같은 파서를 공유하여 입력 데이터 형식의 단일 소스 오브 트루스를 유지한다.
-
 import { ImportStatus, Prisma } from "@prisma/client";
 
 import {
@@ -93,8 +90,4 @@ export async function listImportBatches(limit = 20) {
     orderBy: { createdAt: "desc" },
     take: limit,
   });
-}
-
-export async function getImportBatch(id: string) {
-  return prisma.importBatch.findUnique({ where: { id } });
 }

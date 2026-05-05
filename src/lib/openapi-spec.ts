@@ -1,7 +1,4 @@
-/**
- * OpenAPI 3.0 스펙 — `/api/v1/*` REST 엔드포인트 문서화.
- * 실제 응답 래핑은 `lib/api-response.ts`와 동일: 성공 `{ data, meta? }`, 실패 `{ error }`.
- */
+/** OpenAPI 3 — `/api/v1/*`. 응답 형식은 api-response.ts와 동일. */
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- OpenAPI JSON 트리 */
 export function getOpenApiDocument(): Record<string, any> {

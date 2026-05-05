@@ -1,6 +1,3 @@
-// 활동/계수 로드 → 도메인 입력 매핑 → 도메인 계산 → 응답 변환.
-// 4개 dashboard 라우트가 공유한다.
-
 import { z } from "zod";
 
 import {
@@ -122,7 +119,6 @@ export const ActivityLinesQuerySchema = DashboardRangeSchema.extend({
 
 export type ActivityLinesQuery = z.infer<typeof ActivityLinesQuerySchema>;
 
-/** 대시보드 기간과 동일 필터로 활동 원장 + 건별 PCF(표시용). */
 export async function getActivityLines(
   query: ActivityLinesQuery
 ): Promise<{

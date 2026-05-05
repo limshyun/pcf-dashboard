@@ -1,17 +1,8 @@
-/**
- * 다건 EmissionResult를 대시보드 차트용 형태로 집계한다.
- *
- * 집계는 항상 "계산 결과(EmissionResult[])"를 입력으로 받는다.
- * 활동 raw에 직접 접근하지 않으므로, 입력 정책이 바뀌어도 영향이 없다.
- */
+/** EmissionResult[]를 월·카테고리·Scope·품목별 버킷으로 집계 */
 
 import Decimal from "decimal.js";
 
 import type { EmissionResult } from "./pcf-calculator";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 합계
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function totalEmission(results: readonly EmissionResult[]): Decimal {
   return results.reduce(
@@ -20,25 +11,17 @@ export function totalEmission(results: readonly EmissionResult[]): Decimal {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 월별
-// ─────────────────────────────────────────────────────────────────────────────
-
 export interface MonthlyBucket {
   yearMonth: string; // "YYYY-MM"
   co2eKg: Decimal;
 }
 
-/** YYYY-MM 키 생성 (UTC 기준, 시간대 변환은 호출자 책임) */
 function toYearMonth(date: Date): string {
   const y = date.getUTCFullYear();
   const m = String(date.getUTCMonth() + 1).padStart(2, "0");
   return `${y}-${m}`;
 }
 
-/**
- * 월별 합계. 결과는 yearMonth 오름차순 정렬.
- */
 export function aggregateByMonth(
   results: readonly EmissionResult[]
 ): MonthlyBucket[] {
@@ -51,10 +34,6 @@ export function aggregateByMonth(
     .map(([yearMonth, co2eKg]) => ({ yearMonth, co2eKg }))
     .sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 카테고리별
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface CategoryBucket {
   categoryCode: string;
@@ -83,10 +62,6 @@ export function aggregateByCategory(
     .sort((a, b) => Number(b.co2eKg) - Number(a.co2eKg));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Scope별 (GHG Protocol)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export interface ScopeBucket {
   scope: number;
   co2eKg: Decimal;
@@ -110,10 +85,6 @@ export function aggregateByScope(
     }))
     .sort((a, b) => a.scope - b.scope);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 품목별 Top N
-// ─────────────────────────────────────────────────────────────────────────────
 
 export interface ItemBucket {
   itemCode: string;

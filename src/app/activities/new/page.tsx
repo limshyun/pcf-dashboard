@@ -104,8 +104,6 @@ export default function NewActivityPage() {
     },
   });
 
-  // SSR과 client에서 todayISO() 결과(timezone)가 달라지는 hydration mismatch 방지.
-  // 빈 값으로 SSR → client mount 후 setValue로 채운다.
   useEffect(() => {
     setValue("occurredAt", todayISO());
   }, [setValue]);

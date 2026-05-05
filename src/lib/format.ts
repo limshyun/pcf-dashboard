@@ -1,5 +1,3 @@
-// 1톤 이상이면 tCO2e, 미만이면 kgCO2e로 자동 전환
-
 export function formatCo2e(kgString: string | number): { value: string; unit: string } {
   const kg = typeof kgString === "string" ? parseFloat(kgString) : kgString;
   if (!Number.isFinite(kg)) return { value: "0", unit: "kgCO2e" };
@@ -37,7 +35,6 @@ export const ITEM_LABEL: Record<string, string> = {
   TRUCK: "트럭",
 };
 
-// 차트 전용 oklch 팔레트 (전체 테마 토큰과 분리하여 카테고리 의미를 고정)
 export const CATEGORY_COLOR: Record<string, string> = {
   ELECTRICITY: "oklch(0.78 0.16 85)",
   MATERIAL: "oklch(0.7 0.18 35)",
