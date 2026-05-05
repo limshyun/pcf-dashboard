@@ -113,8 +113,10 @@ export default function ImportPage() {
           Excel 임포트
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          과제 제공 .xlsx 시트(<code>일자(원본) / 활동 유형 / 설명 / 양 / 단위</code>)를
-          그대로 업로드합니다. 실패 행은 CSV로 내려받아 수정 후 재업로드할 수 있습니다.
+          과제 제공 .xlsx는 컬럼 순서{" "}
+          <code>일자(원본) / 활동 유형 / 설명 / 활동량 / 단위</code>
+          로 읽으며, 활동량 헤더는 시트에 따라 <strong>량</strong> 또는 <strong>양</strong>
+          이어도 됩니다.
         </p>
       </header>
 
