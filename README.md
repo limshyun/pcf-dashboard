@@ -22,11 +22,17 @@
 
 ### 스크린샷·영상
 
-- 대시보드 (`/`): KPI + 차트 + 활동 원장
+- 대시보드 (`/`): KPI + 차트 + 활동 원장 + 임포트 (`/import`): 업로드 결과 + 실패 CSV 다운로드
+
+<img width="1080" height="608" alt="무제1" src="https://github.com/user-attachments/assets/f2f23934-4378-49db-85ad-7c389b7b79c4" />
+
 - 활동 입력 (`/activities/new`): 정상 입력 + 오류 메시지
+
+<img width="1080" height="608" alt="무제2" src="https://github.com/user-attachments/assets/459e4ba5-de4a-4c0b-b75f-cfbbea93f925" />
+
 - 배출계수 (`/factors`): 버전 목록 + 최근 변경
-- 임포트 (`/import`): 업로드 결과 + 실패 CSV 다운로드
-- API 문서 (`/docs`)
+
+<img width="1080" height="608" alt="무제3" src="https://github.com/user-attachments/assets/c228bf92-0fa0-49a9-9fdd-76c0c10c21ba" />
 
 
 ---
@@ -225,9 +231,4 @@ erDiagram
 
 - **이유**: 구현 단순·데이터 소스 단일(한 번의 DB 읽기 패턴).
 - **트레이드오프**: 요청당 Prisma/계산 중복. 확장 시 단일 집계 API 또는 서버 캐시로 묶을 수 있음.
-
-### 단일 Next.js 앱(BFF)
-
-- **이유**: 과제 단위에서 배포·리포 한 개로 제출 용이.
-- **트레이드오프**: 트래픽이 커지면 API만 분리하는 편이 낫다.
 
