@@ -9,7 +9,7 @@
 | **필수** | PCF 계산 결과 시각화·직관 | 대시보드 KPI·월별/카테고리/품목 차트·활동 원장(PCF) 표. 단위는 `formatCo2e` 등으로 표기. |
 | **필수** | 표시 값·단위 정확 | `Decimal` 기반 `calculateEmission`, 단위 불일치 시 `UnitMismatchError`. 차트 툴팁·KPI에 kgCO2e/tCO2e. |
 | **필수** | 잘못된 입력 시 에러 | 활동 입력: Zod + RHF 필드 에러, API `ApiError` 매핑. 임포트: 실패 행 목록 UI + **오류 CSV 다운로드**(`import/page.tsx`). |
-| **필수** | UI 실행 영상·스크린샷 | **[`docs/submission/README.md`](docs/submission/README.md)** 에 촬영 목록·영상 시나리오. 캡처 파일은 같은 폴더에 두면 아래 미리보기 링크가 살아납니다. |
+| **필수** | UI 실행 영상·스크린샷 | 아래 **「스크린샷·영상 (GitHub 직접 업로드)」** 섹션에 캡처 이미지/GIF URL과 영상 링크를 첨부. |
 | **필수** | README 로컬 실행 **5단계** + **`yarn start` 무오류** | 아래 **「로컬 실행 (과제 필수: 5단계 + yarn start)」** 참고. |
 | **필수** | AI 사용 내역 README 기록 | 아래 **「AI 사용 내역」** 섹션. |
 | **필수** | 시스템 설명·설계 README | 아래 **「시스템 개요」**, **「설계 결정 / Trade-off」**, **ERD**. |
@@ -19,11 +19,15 @@
 | **보너스** | Docker Compose 즉시 실행 | `docker-compose.yml` + `yarn db:up`. |
 | **보너스** | 과제 Excel 그대로 임포트 | `/import` + `POST /api/v1/import`, 파서 `src/lib/excel-parser.ts`. |
 | **보너스** | OpenAPI/Swagger | `/docs`, `GET /api/v1/openapi`. |
-| **보너스** | 타 시스템과 비교 | 아래 **「타 시스템과의 비교 (보너스)」**. |
 
 ### 스크린샷·영상
 
-파일 이름·촬영 시나리오는 **[`docs/submission/README.md`](docs/submission/README.md)** 를 따른 뒤, PNG 를 `docs/submission/` 에 넣고 제출하세요. (선택) 루트 README에 미리보기를 넣고 싶다면 해당 PNG 커밋 후 `![대시보드](docs/submission/01-dashboard.png)` 형태로 추가하면 됩니다.
+- 대시보드 (`/`): KPI + 차트 + 활동 원장
+- 활동 입력 (`/activities/new`): 정상 입력 + 오류 메시지
+- 배출계수 (`/factors`): 버전 목록 + 최근 변경
+- 임포트 (`/import`): 업로드 결과 + 실패 CSV 다운로드
+- API 문서 (`/docs`)
+
 
 ---
 
@@ -42,21 +46,15 @@
 
 ## 로컬 실행 (과제 필수: 5단계 + `yarn start`)
 
-과제 문구: *README 안에서 5단계로 안내하고, **`yarn start` 로 오류 없이 실행**할 수 있어야 한다.*
-
 ```bash
 # 1) 저장소 클론 + Node 버전 (저장소 루트의 .nvmrc 기준, 예: Node 24)
-git clone <repo-url> && cd hanaloop-recruitment-pcf-dashboard
-nvm use
+git clone https://github.com/limshyun/pcf-dashboard.git && cd pcf-dashboard && nvm use
 
 # 2) 환경 변수 + 패키지 설치
-cp .env.example .env
-yarn install
+cp .env.example .env && yarn install
 
 # 3) PostgreSQL 기동 + 스키마 적용 + 시드 (Docker Compose)
-yarn db:up
-yarn db:deploy
-yarn db:seed
+yarn db:up && yarn db:deploy && yarn db:seed
 
 # 4) 프로덕션 빌드
 yarn build
@@ -92,6 +90,12 @@ yarn start
 ```bash
 yarn test   # Vitest — PCF 계산·집계 단위 테스트 (domain/__tests__)
 ```
+
+## Assumptions
+
+- 과제 제공 데이터 기준으로 활동 품목은 `KEPCO`, `PLASTIC_1`, `PLASTIC_2`, `TRUCK` 중심으로 구성했습니다.
+- 배출계수 매칭 규칙은 `validFrom <= occurredAt < validTo` 이며, `validTo` 가 `null` 인 경우 현재 유효로 간주합니다.
+- 활동 입력 단위는 품목 기준 단위와 일치해야 하며, 불일치 시 저장 대신 오류를 반환합니다.
 
 ---
 
@@ -133,21 +137,11 @@ src/
   services/             Prisma 유스케이스
   hooks/                데이터 페칭 훅
   lib/                  api-client, openapi-spec, excel-parser, format …
-docs/
-  submission/           제출용 스크린샷·영상 가이드
 prisma/
   schema.prisma
   migrations/
   seed.ts
 ```
-
----
-
-## 진행 상황 (내부 마일스톤)
-
-- [x] Step 1 ~ 11: 부트스트랩 ~ Swagger·README·ERD·발표 메모까지 완료 (상세는 Git 히스토리 참고).
-
----
 
 ## AI 사용 내역
 
@@ -161,15 +155,7 @@ prisma/
 | 도메인/API | PCF 계산·집계·Vitest·라우트 초안 | `pickFactorAt`·단위 검증 의미 검토, `ApiError` 매핑·HTTP 코드 정책 확정, 실패 시나리오 수동 테스트 |
 | UI | 페이지·차트·폼 레이아웃 초안 | 라벨·에러 메시지 한글화, 임포트/대시보드 플로우 점검, 필요 시 컴포넌트 구조 조정 |
 | 리팩터·기능 확장 | 네이밍·활동 원장·삭제 API 등 제안 | diff 리뷰 후 채택 여부 결정, lint/test 통과 확인 |
-| 문서·스펙 | OpenAPI/README/ERD 초안 | 과제 체크리스트와 맞춰 재구성, 제출용 스크린샷·영상은 직접 촬영 |
-
-### 대표 프롬프트 예시 (발표 시 구두로 풀 수 있는 수준)
-
-1. *「과제 엑셀 컬럼명이 ‘양’/‘량’ 혼용일 수 있으니 파서에서 둘 다 허용하고, DB는 품목·계수 버전으로 나눠줘」* → 스키마·파서 방향을 먼저 정한 뒤 AI가 코드 초안 작성.
-2. *「대시보드 응답은 `{ data, meta }` 로 통일하고, PCF는 저장하지 말고 조회 시 계산해줘」* → API 규약·도메인 트레이드오프를 지정하고 구현 보조.
-3. *「README에 과제 체크리스트 대응표와 `yarn start` 5단계를 넣어줘」* → 제출 요건을 사람이 나열하고 문서 초안만 보조.
-
-**본인 확정 의사결정 예**: API 응답 `{ data }` 통일, PCF **비저장·조회 시 계산**(계수 변경에 강함, 대신 연산 비용↑ — 아래 Trade-off 참고).
+| 문서·스펙 | OpenAPI/README/ERD 초안 | 과제 체크리스트와 맞춰 재구성 |
 
 ---
 
@@ -221,8 +207,6 @@ erDiagram
   }
 ```
 
-`activities.memo`, `activities.import_batch_id`, `import_batches.errors` 는 **선택(null 허용)**. 직접 입력한 활동은 배치 없이 `importBatchId` 가 비어 있을 수 있습니다.
-
 ---
 
 ## 설계 결정 / Trade-off (발표용: **왜?** + **트레이드오프**)
@@ -247,45 +231,3 @@ erDiagram
 - **이유**: 과제 단위에서 배포·리포 한 개로 제출 용이.
 - **트레이드오프**: 트래픽이 커지면 API만 분리하는 편이 낫다.
 
----
-
-## 타 시스템과의 비교 (보너스)
-
-| 구분 | 스프레드시트만 쓸 때 | 본 프로젝트 |
-|------|---------------------|-------------|
-| 계수 변경 | 과거 행까지 수동 수정 위험 | **버전 행 + 발생일 매칭**으로 재계산 |
-| 집계 | 피벗·수식 분산 | **도메인 함수 + API**로 단일 규칙 |
-| 협업 | 파일 락·버전 혼선 | **DB + Git**으로 스키마·앱 이력 분리 |
-| LCA 전문 툴 | 풀 라이프사이클·방대한 DB | **과제 범위 PCF**에 맞춘 경량 대시보드 |
-
----
-
-## 평가 기준 매핑 (요약)
-
-| 영역 | 반영 위치 |
-|------|-----------|
-| 도메인 이해 (PCF·Scope) | `domain/`, 시드 카테고리·`SCOPE_LABEL`, README 본 섹션 |
-| 시스템 설계 | 레이어 분리, REST, ERD, Trade-off |
-| UX | 한글 라벨, 차트·필터, 입력 오류, 임포트 피드백 |
-| 논리 설명 | 본 README + 발표 메모 + AI 사용 내역 |
-
----
-
-## 발표용 메모 (초안)
-
-1. **과제 해석**: 활동·계수를 DB로 옮기고 PCF를 **기간·Scope·품목**으로 읽기 쉽게.
-2. **데이터 모델**: 카테고리 → 품목 → 활동 / 품목 → 배출계수 버전 / 임포트 배치.
-3. **핵심 알고리즘**: `pickFactorAt` + 단위 검증 + `Decimal` 곱셈.
-4. **검증**: Vitest, 수동으로 `yarn start` + 임포트·대시보드.
-5. **한계**: 인증·캐시·멀티 테넌트 미구현.
-
----
-
-## Docker (보너스)
-
-```bash
-yarn db:up      # PostgreSQL 컨테이너
-yarn db:down    # 중지
-```
-
-`docker-compose.yml` 에 DB 서비스 정의. 앱은 호스트에서 `yarn dev` 또는 `yarn start` 로 실행합니다.
