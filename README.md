@@ -97,6 +97,30 @@ yarn start
 yarn test   # Vitest — PCF 계산·집계 단위 테스트 (domain/__tests__)
 ```
 
+도메인 레이어 테스트를 먼저 작성한 이유는, 이 과제의 핵심 위험이 UI보다 **계산 규칙/버전 매칭/단위 정합성 오류**라고 판단했기 때문입니다.  
+특히 배출계수는 시점(`validFrom`, `validTo`)에 따라 결과가 바뀌므로, 눈으로만 확인하면 놓치기 쉬운 경계값을 테스트로 고정했습니다.
+
+#### 왜 테스트를 작성했는가
+
+- **회귀 방지**: 계수 버전 정책(`validFrom <= occurredAt < validTo`)을 이후 리팩터링에서도 깨지지 않게 보호
+- **정확도 보장**: `Decimal` 계산으로 부동소수 오차 없이 kgCO2e 결과를 재현
+- **실패 시나리오 명세화**: 단위 불일치, 계수 누락, 잘못된 계수 단위 형식을 의도적으로 실패시켜 에러 계약을 문서화
+- **집계 신뢰성 확보**: 월/카테고리/Scope/품목 집계 결과와 정렬 규칙(Top N 포함)을 예측 가능한 값으로 고정
+
+#### 어떻게 테스트했는가
+
+- **대상 파일**
+  - `src/domain/__tests__/pcf-calculator.test.ts`
+  - `src/domain/__tests__/pcf-aggregator.test.ts`
+- **방식**
+  - DB/API를 붙이지 않고, 순수 함수(`pcf-calculator`, `pcf-aggregator`)에 고정 입력을 넣어 단위 테스트
+  - 정상 경로 + 경계값 + 예외 경로를 함께 검증
+- **핵심 시나리오**
+  - 같은 활동량이라도 날짜에 따라 계수 버전이 달라지는지
+  - `kgCO2e/kWh`처럼 계수 분모와 활동 단위가 정확히 일치하는지
+  - 계수 없음(`MissingFactorError`), 단위 불일치(`UnitMismatchError`), 형식 오류(`InvalidFactorUnitError`)가 올바른 타입으로 발생하는지
+  - 월별 합계, 카테고리 비율 합(≈1), Scope별 합계, 품목 Top N 정렬이 기대값과 일치하는지
+
 ## Assumptions
 
 - 과제 제공 데이터 기준으로 활동 품목은 `KEPCO`, `PLASTIC_1`, `PLASTIC_2`, `TRUCK` 중심으로 구성했습니다.
