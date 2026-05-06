@@ -60,7 +60,7 @@ git clone https://github.com/limshyun/pcf-dashboard.git && cd pcf-dashboard && n
 cp .env.example .env && yarn install
 
 # 3) PostgreSQL 기동 + 스키마 적용 + 시드 (Docker Compose)
-yarn db:up && yarn db:deploy && yarn db:seed
+yarn db:up && docker compose up -d --wait db && yarn db:deploy && yarn db:seed
 
 # 4) 프로덕션 빌드
 yarn build
@@ -74,6 +74,32 @@ yarn start
 - **개발 시**에는 위 3) 이후 `yarn dev` 로 핫 리로드할 수 있습니다.
 - `yarn db:migrate` 는 로컬에서 스키마를 바꿀 때(`migrate dev`) 쓰고, **처음 클론 후 `yarn start` 검증**에는 **`yarn db:deploy`** 가 CI/운영과 동일하게 맞습니다.
 - `.env` 의 `DATABASE_URL` 은 `.env.example` 과 같이 Docker DB(`pcf:pcf@localhost:5432/pcf`)를 가리켜야 합니다.
+- 3)에서 `P1001` 이 나면 DB가 아직 준비 중인 경우가 많으니, 아래 **「DB 연결 에러(P1001) 빠른 해결」** 순서대로 확인 후 `yarn db:deploy && yarn db:seed` 만 다시 실행하세요.
+
+### DB 연결 에러(P1001) 빠른 해결
+
+`prisma migrate deploy` 에서 아래 에러가 나오면:
+
+```bash
+Error: P1001: Can't reach database server at `localhost:5432`
+```
+
+다음 순서로 점검하세요.
+
+```bash
+# 1) Docker 컨테이너 상태 확인 (pcf-postgres 가 Up/healthy 인지)
+docker compose ps
+
+# 2) DB 로그 확인 (기동 직후면 준비 중 로그가 보일 수 있음)
+docker compose logs db --tail=100
+
+# 3) DB가 healthy 되면 재시도
+yarn db:deploy && yarn db:seed
+```
+
+- `Up` 이지만 `healthy` 가 아니면 5~15초 기다린 뒤 재시도하세요.
+- 5432 포트 충돌 시 `docker compose down` 후 로컬 Postgres를 중지하고 `yarn db:up` 을 다시 실행하세요.
+- `.env` 의 `DATABASE_URL` 이 `postgresql://pcf:pcf@localhost:5432/pcf?schema=public` 인지 확인하세요.
 
 ### API 문서 (Swagger)
 
